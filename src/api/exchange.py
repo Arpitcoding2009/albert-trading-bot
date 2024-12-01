@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import logging
 from ..utils.config import Settings
 from ..core.exceptions import ExchangeError
+from .coindcx_manager import CoinDCXManager
 
 class ExchangeManager:
     def __init__(self):
@@ -12,7 +13,7 @@ class ExchangeManager:
         self.logger = logging.getLogger(__name__)
         self.exchanges = {}
         self.supported_exchanges = {
-            'coindcx': ccxt.coindcx,
+            'coindcx': CoinDCXManager,
             'binance': ccxt.binance,
             'kucoin': ccxt.kucoin,
             'huobi': ccxt.huobi
@@ -25,15 +26,21 @@ class ExchangeManager:
                 raise ExchangeError(f"Exchange {exchange_id} not supported")
 
             exchange_class = self.supported_exchanges[exchange_id]
-            exchange = exchange_class({
-                'apiKey': credentials.get('api_key'),
-                'secret': credentials.get('api_secret'),
-                'enableRateLimit': True,
-                'options': {'defaultType': 'spot'}
-            })
+            if exchange_id == 'coindcx':
+                exchange = exchange_class(credentials)
+            else:
+                exchange = exchange_class({
+                    'apiKey': credentials.get('api_key'),
+                    'secret': credentials.get('api_secret'),
+                    'enableRateLimit': True,
+                    'options': {'defaultType': 'spot'}
+                })
 
             # Test connection
-            exchange.load_markets()
+            if exchange_id == 'coindcx':
+                exchange.test_connection()
+            else:
+                exchange.load_markets()
             self.exchanges[exchange_id] = exchange
             self.logger.info(f"Successfully initialized {exchange_id} exchange")
             
@@ -53,7 +60,10 @@ class ExchangeManager:
             if not exchange:
                 raise ExchangeError(f"Exchange {exchange_id} not initialized")
 
-            ohlcv = exchange.fetch_ohlcv(symbol, timeframe, limit=limit)
+            if exchange_id == 'coindcx':
+                ohlcv = exchange.fetch_ohlcv(symbol, timeframe, limit=limit)
+            else:
+                ohlcv = exchange.fetch_ohlcv(symbol, timeframe, limit=limit)
             df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
             df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
             return df.set_index('timestamp')
@@ -79,13 +89,16 @@ class ExchangeManager:
             if price:
                 params['price'] = price
 
-            order = exchange.create_order(
-                symbol=symbol,
-                type=order_type,
-                side=side,
-                amount=amount,
-                params=params
-            )
+            if exchange_id == 'coindcx':
+                order = exchange.place_order(symbol, order_type, side, amount, price)
+            else:
+                order = exchange.create_order(
+                    symbol=symbol,
+                    type=order_type,
+                    side=side,
+                    amount=amount,
+                    params=params
+                )
 
             self.logger.info(f"Order placed successfully: {order['id']}")
             return order
@@ -101,7 +114,10 @@ class ExchangeManager:
             if not exchange:
                 raise ExchangeError(f"Exchange {exchange_id} not initialized")
 
-            balance = exchange.fetch_balance()
+            if exchange_id == 'coindcx':
+                balance = exchange.get_balance()
+            else:
+                balance = exchange.fetch_balance()
             return {
                 'total': balance['total'],
                 'free': balance['free'],
@@ -122,7 +138,10 @@ class ExchangeManager:
             if not exchange:
                 raise ExchangeError(f"Exchange {exchange_id} not initialized")
 
-            order_book = exchange.fetch_order_book(symbol, limit)
+            if exchange_id == 'coindcx':
+                order_book = exchange.get_order_book(symbol, limit)
+            else:
+                order_book = exchange.fetch_order_book(symbol, limit)
             return {
                 'bids': order_book['bids'],
                 'asks': order_book['asks'],
@@ -141,7 +160,10 @@ class ExchangeManager:
             if not exchange:
                 raise ExchangeError(f"Exchange {exchange_id} not initialized")
 
-            ticker = exchange.fetch_ticker(symbol)
+            if exchange_id == 'coindcx':
+                ticker = exchange.get_ticker(symbol)
+            else:
+                ticker = exchange.fetch_ticker(symbol)
             return ticker
 
         except Exception as e:
@@ -158,7 +180,10 @@ class ExchangeManager:
             if not exchange:
                 raise ExchangeError(f"Exchange {exchange_id} not initialized")
 
-            result = exchange.cancel_order(order_id, symbol)
+            if exchange_id == 'coindcx':
+                result = exchange.cancel_order(order_id, symbol)
+            else:
+                result = exchange.cancel_order(order_id, symbol)
             self.logger.info(f"Order cancelled successfully: {order_id}")
             return result
 
@@ -176,7 +201,10 @@ class ExchangeManager:
             if not exchange:
                 raise ExchangeError(f"Exchange {exchange_id} not initialized")
 
-            trades = exchange.fetch_trades(symbol, limit=limit)
+            if exchange_id == 'coindcx':
+                trades = exchange.get_trades(symbol, limit)
+            else:
+                trades = exchange.fetch_trades(symbol, limit=limit)
             return trades
 
         except Exception as e:
@@ -187,7 +215,10 @@ class ExchangeManager:
         """Close all exchange connections"""
         for exchange_id, exchange in self.exchanges.items():
             try:
-                exchange.close()
+                if exchange_id == 'coindcx':
+                    exchange.close_connection()
+                else:
+                    exchange.close()
                 self.logger.info(f"Closed connection to {exchange_id}")
             except Exception as e:
                 self.logger.error(f"Error closing {exchange_id} connection: {str(e)}")
