@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Albert - The World's Most Advanced Crypto Trading Bot</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Three.js for 3D animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body class="bg-gray-900 text-white font-montserrat">
+    <!-- Navigation -->
+    <nav class="bg-gray-800 border-b border-blue-500">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <div class="albert-logo">
+                            <img class="h-10 w-10" src="/static/img/logo.png" alt="Albert">
+                        </div>
+                        <span class="ml-2 text-xl font-bold text-blue-400">Albert AI</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="trading-status" class="status-indicator">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Inactive</span>
+                    </div>
+                    <button id="start-trading" class="trading-btn trading-btn-start">
+                        Start Trading
+                    </button>
+                    <button id="stop-trading" class="trading-btn trading-btn-stop hidden">
+                        Emergency Stop
+                    </button>
+                    <div class="relative">
+                        <button id="user-menu" class="profile-btn">
+                            <img class="h-8 w-8 rounded-full" src="/static/img/avatar.png" alt="">
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero-section relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 py-12">
+            <div class="text-center">
+                <h1 class="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl">
+                    <span class="block text-blue-400">The Future of</span>
+                    <span class="block text-white">Crypto Trading</span>
+                </h1>
+                <p class="mt-3 max-w-md mx-auto text-base text-gray-300 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+                    Powered by advanced AI with 85-90% accuracy in sentiment analysis and ultra-fast execution.
+                </p>
+            </div>
+            <div id="hero-3d" class="mt-10 h-64"></div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- Performance Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="stat-card">
+                <h3>Portfolio Value</h3>
+                <div class="stat-value" id="portfolio-value">$0.00</div>
+                <div class="stat-change" id="portfolio-change">+0.00%</div>
+            </div>
+            <div class="stat-card">
+                <h3>24h Profit</h3>
+                <div class="stat-value" id="daily-profit">$0.00</div>
+                <div class="stat-change" id="profit-change">+0.00%</div>
+            </div>
+            <div class="stat-card">
+                <h3>Win Rate</h3>
+                <div class="stat-value" id="win-rate">0%</div>
+                <div class="stat-subtitle">Last 100 trades</div>
+            </div>
+            <div class="stat-card">
+                <h3>Active Trades</h3>
+                <div class="stat-value" id="active-trades">0</div>
+                <div class="stat-subtitle">Across all pairs</div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div class="chart-card">
+                <h3>Portfolio Performance</h3>
+                <div class="chart-container">
+                    <canvas id="portfolio-chart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>Active Strategies</h3>
+                <div class="chart-container">
+                    <canvas id="strategies-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Trades Table -->
+        <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Active Trades</h3>
+                <button class="refresh-btn">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full" id="trades-table">
+                    <thead>
+                        <tr>
+                            <th>Pair</th>
+                            <th>Strategy</th>
+                            <th>Entry Price</th>
+                            <th>Current Price</th>
+                            <th>PnL</th>
+                            <th>Duration</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Trading Settings</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-grid">
+                    <div class="setting-item">
+                        <label>Risk Level</label>
+                        <select id="risk-level">
+                            <option value="low">Conservative</option>
+                            <option value="medium">Moderate</option>
+                            <option value="high">Aggressive</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label>Daily Profit Target</label>
+                        <input type="number" id="profit-target" min="0" step="0.1">
+                    </div>
+                    <div class="setting-item">
+                        <label>Stop Loss (%)</label>
+                        <input type="number" id="stop-loss" min="0" max="100" step="0.1">
+                    </div>
+                    <div class="setting-item">
+                        <label>Active Strategies</label>
+                        <div class="strategy-toggles">
+                            <label class="toggle">
+                                <input type="checkbox" id="trend-following">
+                                Trend Following
+                            </label>
+                            <label class="toggle">
+                                <input type="checkbox" id="mean-reversion">
+                                Mean Reversion
+                            </label>
+                            <label class="toggle">
+                                <input type="checkbox" id="arbitrage">
+                                Arbitrage
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="save-settings">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/charts.js"></script>
+    <script src="/static/js/trading.js"></script>
+    <script src="/static/js/3d-visualizations.js"></script>
+</body>
+</html>
