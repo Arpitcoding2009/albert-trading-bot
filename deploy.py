@@ -21,16 +21,22 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from config import get_config
 
-# Configure logging
+# Enhanced Logging Configuration
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler('deployment.log')
+        logging.StreamHandler(sys.stdout),  # Console output
+        logging.FileHandler('/tmp/albert_trading_bot.log')  # Log file
     ]
 )
-logger = logging.getLogger('deployment_manager')
+logger = logging.getLogger(__name__)
+
+# Add global exception handler
+def global_exception_handler(exc_type, exc_value, exc_traceback):
+    logger.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+
+sys.excepthook = global_exception_handler
 
 class PerformanceMonitor:
     @staticmethod
@@ -89,7 +95,7 @@ class AlbertDeploymentManager:
             self._validate_config()
             
             # Perform pre-deployment checks
-            self._pre_deployment_checks()
+            self._pre.deployment_checks()
             
             # Log deployment time
             deployment_time = time.time() - start_time
@@ -205,8 +211,13 @@ def create_app():
 
     return app
 
-# Create FastAPI app
-app = create_app()
+try:
+    # Create FastAPI app
+    app = create_app()
+except Exception as e:
+    logger.error(f"Failed to create application: {e}")
+    logger.error(traceback.format_exc())
+    raise
 
 def main():
     # Initialize deployment manager
