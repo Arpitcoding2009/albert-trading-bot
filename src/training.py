@@ -308,7 +308,15 @@ class TradingModel:
 
 class AlbertTrainer:
     def __init__(self):
-        self.exchange = ccxt.coindcx()
+        # Access environment variables
+        coindcx_api_key = os.getenv('COINDCX_API_KEY')
+        coindcx_secret_key = os.getenv('COINDCX_SECRET_KEY')
+
+        # Initialize the exchange with the keys
+        self.exchange = ccxt.coindcx({
+            'apiKey': coindcx_api_key,
+            'secret': coindcx_secret_key,
+        })
         self.model = TradingModel()
         self.best_params = None
         self.training_progress = 0
