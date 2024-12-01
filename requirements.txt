@@ -9,5 +9,6 @@ ta
 fastapi
 gunicorn
 uvicorn
+talib
+TA-Lib
 # Removed talib due to installation issues
-# talib
