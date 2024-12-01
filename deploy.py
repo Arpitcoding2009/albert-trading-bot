@@ -193,4 +193,8 @@ def main():
     server.run()
 
 if __name__ == "__main__":
-    main()
+    if os.environ.get('RENDER') == 'true':
+        server = uvicorn.Server(uvicorn_config)
+        server.run()
+    else:
+        main()
