@@ -10,7 +10,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 import psutil
 import platform
 
@@ -227,7 +227,7 @@ def create_app():
 # Render requires this specific configuration
 app = create_app()
 
-# Ensure Render can find the app
+# Main entry point for Render
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 10000))
     uvicorn.run(
