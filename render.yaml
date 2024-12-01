@@ -4,7 +4,7 @@ services:
   env: python
   region: us-west
   branch: main
-  runtime: python3.10.12
+  runtime: python3.9.7
   
   # Build Triggers Configuration
   buildTriggers:
@@ -25,20 +25,20 @@ services:
           - '*.log'
   
   buildCommand: |
-    python -m pip install --upgrade pip
     pip install -r requirements.txt
-    pip install setuptools wheel
-    python src/cpp/setup.py build_ext --inplace
   startCommand: |
-    gunicorn --workers 4 --worker-class uvicorn.workers.UvicornWorker --timeout 180 --bind 0.0.0.0:$PORT deploy:app
+    uvicorn deploy_enhanced:app --host 0.0.0.0 --port $PORT
   envVars:
+    - key: PORT
+      value: 10000
+    
     - key: PYTHON_VERSION
-      value: 3.10.12
+      value: 3.9.7
     
     # Cryptocurrency Exchange API Credentials (IMPORTANT: Set these in Render Dashboard)
-    - key: COINDCX_API_KEY
+    - key: BINANCE_API_KEY
       sync: false
-    - key: COINDCX_SECRET_KEY
+    - key: BINANCE_SECRET_KEY
       sync: false
     
     # Security Settings
@@ -92,8 +92,6 @@ services:
       sync: false
     
     # Render Specific
-    - key: PORT
-      value: 10000
     - key: RENDER
       value: true
     

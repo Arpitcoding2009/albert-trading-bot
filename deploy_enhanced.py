@@ -6,11 +6,11 @@ from typing import List, Dict
 from datetime import datetime
 
 import uvicorn
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi import Request
+from fastapi.responses import HTMLResponse
 import psutil
 import platform
 
@@ -164,8 +164,12 @@ def create_app():
     )
     
     # Static files and templates
-    app.mount("/static", StaticFiles(directory="static"), name="static")
-    templates = Jinja2Templates(directory="templates")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    templates_dir = os.path.join(base_dir, 'templates')
+    static_dir = os.path.join(base_dir, 'static')
+    
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+    templates = Jinja2Templates(directory=templates_dir)
     
     deployment_manager = AdvancedDeploymentManager()
     
@@ -191,7 +195,7 @@ def create_app():
         except WebSocketDisconnect:
             deployment_manager.active_websockets.remove(websocket)
     
-    @app.get("/")
+    @app.get("/", response_class=HTMLResponse)
     async def index(request: Request):
         """Render main dashboard"""
         return templates.TemplateResponse("index.html", {"request": request})
@@ -220,35 +224,15 @@ def create_app():
     
     return app
 
-def main():
-    """Main entry point for the application"""
-    app_instance = create_app()
-    
-    # Get port from environment, default to 10000
-    port = int(os.getenv("PORT", 10000))
-    
-    # Uvicorn configuration
-    uvicorn_config = uvicorn.Config(
-        app_instance, 
-        host="0.0.0.0", 
-        port=port,
-        reload=True  # Enable auto-reload for development
-    )
-    
-    # Create and run server
-    server = uvicorn.Server(uvicorn_config)
-    server.run()
+# Render requires this specific configuration
+app = create_app()
 
+# Ensure Render can find the app
 if __name__ == "__main__":
-    # Ensure proper handling for both local and Render environments
-    if os.environ.get('RENDER') == 'true':
-        # Specific configuration for Render
-        port = int(os.getenv("PORT", 10000))
-        uvicorn.run(
-            "deploy_enhanced:app", 
-            host="0.0.0.0", 
-            port=port, 
-            reload=False
-        )
-    else:
-        main()
+    port = int(os.getenv("PORT", 10000))
+    uvicorn.run(
+        "deploy_enhanced:app", 
+        host="0.0.0.0", 
+        port=port, 
+        reload=False
+    )
