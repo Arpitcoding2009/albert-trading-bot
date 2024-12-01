@@ -1,14 +1,34 @@
-fastapi
-gunicorn
-uvicorn
-pybind11
-jpype
-numpy
-pandas
-scikit-learn
-ccxt
-optuna
-tensorflow
-python-dotenv
-requests
-websockets
+# Web Framework
+fastapi==0.95.1
+uvicorn==0.22.0
+gunicorn==20.1.0
+
+# Machine Learning
+tensorflow==2.12.0
+scikit-learn==1.2.2
+numpy==1.23.5
+pandas==2.0.1
+
+# Trading and Exchange
+ccxt==2.5.21
+optuna==2.10.0
+
+# Performance and Bindings
+pybind11==2.10.4
+jpype1==1.4.1
+
+# Security and Configuration
+python-dotenv==1.0.0
+python-jose==3.3.0
+passlib==1.7.4
+
+# Monitoring and Logging
+sentry-sdk==1.22.2
+
+# Additional Utilities
+requests==2.30.0
+websockets==11.0.3
+
+# Development and Testing
+pytest==7.3.1
+coverage==7.2.5
