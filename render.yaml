@@ -5,6 +5,25 @@ services:
   region: us-west
   branch: main
   runtime: python3.10.12
+  
+  # Build Triggers Configuration
+  buildTriggers:
+    - paths:
+        included:
+          - deploy.py
+          - requirements.txt
+          - src/trading/**
+          - config/**
+          - static/js/trading.js
+          - .env.example
+          - runtime.txt
+        ignored:
+          - docs/**
+          - tests/**
+          - '*.md'
+          - .git/**
+          - '*.log'
+  
   buildCommand: |
     python -m pip install --upgrade pip
     pip install -r requirements.txt
