@@ -1,7 +1,6 @@
 pandas
 numpy
 ccxt
-talib
 joblib
 scikit-learn
 optuna
@@ -10,3 +9,5 @@ ta
 fastapi
 gunicorn
 uvicorn
+# Removed talib due to installation issues
+# talib
