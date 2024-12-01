@@ -4,17 +4,17 @@ services:
   env: python
   region: us-west
   branch: main
-  runtime: python3.9
+  runtime: python3.10.12
   buildCommand: |
     python -m pip install --upgrade pip
     pip install -r requirements.txt
     pip install setuptools wheel
     python src/cpp/setup.py build_ext --inplace
   startCommand: |
-    gunicorn --workers 4 --worker-class uvicorn.workers.UvicornWorker --timeout 120 deploy:app
+    gunicorn --workers 4 --worker-class uvicorn.workers.UvicornWorker --timeout 180 deploy:app
   envVars:
     - key: PYTHON_VERSION
-      value: 3.9.7
+      value: 3.10.12
     
     # Cryptocurrency Exchange API Credentials (IMPORTANT: Set these in Render Dashboard)
     - key: COINDCX_API_KEY
@@ -27,14 +27,24 @@ services:
       generateValue: true
     - key: DEBUG
       value: false
+    - key: ENCRYPTION_SALT
+      generateValue: true
     
     # Machine Learning Model Configuration
     - key: MODEL_PATH
       value: /opt/albert/models/trading_model.h5
+    - key: PREDICTION_CONFIDENCE_THRESHOLD
+      value: 0.75
     
     # Trading Configuration
     - key: TRADING_ENABLED
       value: false
+    - key: TRADING_STRATEGY
+      value: machine_learning
+    - key: EXCHANGE_NAME
+      value: binance
+    - key: TRADING_PAIR
+      value: BTC/USDT
     - key: MAX_TRADE_AMOUNT
       value: 1000
     - key: RISK_TOLERANCE
@@ -43,37 +53,30 @@ services:
     # Logging and Monitoring
     - key: LOG_LEVEL
       value: INFO
+    - key: LOG_FILE_PATH
+      value: /tmp/albert_trading_bot.log
     - key: SENTRY_DSN
       sync: false
     
     # Performance Optimization
     - key: CACHE_BACKEND
       value: redis
-    - key: GUNICORN_WORKERS
-      value: 4
-    - key: GUNICORN_WORKER_CLASS
-      value: uvicorn.workers.UvicornWorker
-    - key: GUNICORN_TIMEOUT
-      value: 120
-    
-    # Memory and CPU Optimization
-    - key: PYTHONOPTIMIZE
-      value: 2
-    
-    # Compliance and Security
-    - key: COMPLIANCE_CHECK_ENABLED
+    - key: USE_CPP_MODULES
       value: true
-    - key: RATE_LIMIT_REQUESTS
-      value: 100
-    - key: RATE_LIMIT_WINDOW
-      value: 60
+    - key: ENABLE_GPU_ACCELERATION
+      value: false
     
-    # Render Configuration
+    # Monitoring Alerts
+    - key: TELEGRAM_ALERT_BOT_TOKEN
+      sync: false
+    - key: TELEGRAM_CHAT_ID
+      sync: false
+    
+    # Render Specific
     - key: PORT
-      fromService:
-        type: web
-        name: albert-trading-bot
-        property: port
+      value: 10000
+    - key: RENDER
+      value: true
     
   plan: starter
   autoDeploy: true
@@ -83,14 +86,7 @@ services:
     mountPath: /logs
     sizeGB: 1
 
-# Optional: Add database if needed
-# database:
-#   - name: albert-trading-db
-#     plan: free
-
-# Optional: Background worker for trading tasks
-# - type: worker
-#   name: albert-trading-worker
-#   env: python3.10
-#   buildCommand: pip install -r requirements.txt
-#   startCommand: python src/workers/trading_worker.py
+databases:
+- name: albert-trading-bot-redis
+  plan: free
+  ipAllowList: []  # Restrict access as needed
