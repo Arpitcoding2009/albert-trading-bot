@@ -4,87 +4,50 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
-venv/
-.venv/
-*.egg-info/
-
-# Sensitive Information
-*.env
-secrets.json
-credentials.json
-
-# C++ Build Artifacts
-*.pyd
-*.dll
-*.lib
-*.exp
 build/
+develop-eggs/
 dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
 *.egg
+MANIFEST
 
-# Logs and Databases
-*.log
-*.sqlite3
-logs/
+# Virtual Environment
+venv/
+env/
+.env
+.venv
 
-# IDE and Editor Files
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
 
-# OS Generated Files
+# Logs
+*.log
+logs/
+
+# Machine Learning
+*.h5
+*.pkl
+
+# Security
+*.key
+*.pem
+
+# OS
 .DS_Store
 Thumbs.db
 
-# Machine Learning and Model Files
-*.pkl
-*.model
-*.h5
-
-# Jupyter Notebooks
-.ipynb_checkpoints/
-
-# Deployment and Temporary Files
-*.tmp
-*.bak
-.temp/
-
-# Performance and Profiling
-*.prof
-*.out
-
-# Compiled Source
-*.com
-*.class
-*.dll
-*.exe
-*.o
-*.so
-
-# Dependency Directories
-node_modules/
-jspm_packages/
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# dotenv environment variables file
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# Render
+.render/

@@ -1,1 +1,1 @@
-web: python deploy.py
+web: gunicorn --worker-class uvicorn.workers.UvicornWorker deploy:app

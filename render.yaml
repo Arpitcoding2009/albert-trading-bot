@@ -4,14 +4,14 @@ services:
   env: python
   region: us-west
   branch: main
+  runtime: python3.9
   buildCommand: |
-    python -m venv venv
-    source venv/bin/activate
+    python -m pip install --upgrade pip
     pip install -r requirements.txt
+    pip install setuptools wheel
     python src/cpp/setup.py build_ext --inplace
   startCommand: |
-    source venv/bin/activate
-    python deploy.py
+    gunicorn --workers 4 --worker-class uvicorn.workers.UvicornWorker --timeout 120 deploy:app
   envVars:
     - key: PYTHON_VERSION
       value: 3.9.7
@@ -49,8 +49,16 @@ services:
     # Performance Optimization
     - key: CACHE_BACKEND
       value: redis
-    - key: REDIS_URL
-      sync: false
+    - key: GUNICORN_WORKERS
+      value: 4
+    - key: GUNICORN_WORKER_CLASS
+      value: uvicorn.workers.UvicornWorker
+    - key: GUNICORN_TIMEOUT
+      value: 120
+    
+    # Memory and CPU Optimization
+    - key: PYTHONOPTIMIZE
+      value: 2
     
     # Compliance and Security
     - key: COMPLIANCE_CHECK_ENABLED
@@ -59,10 +67,21 @@ services:
       value: 100
     - key: RATE_LIMIT_WINDOW
       value: 60
-
-  plan: free
+    
+    # Render Configuration
+    - key: PORT
+      fromService:
+        type: web
+        name: albert-trading-bot
+        property: port
+    
+  plan: starter
   autoDeploy: true
   healthCheckPath: /health
+  disk:
+    name: logs
+    mountPath: /logs
+    sizeGB: 1
 
 # Optional: Add database if needed
 # database:
