@@ -108,31 +108,52 @@ class AlbertDeploymentManager:
 
     def _validate_config(self):
         """
-        Validate critical configuration parameters
+        Enhanced configuration validation with more comprehensive checks
         """
         critical_checks = {
-            'MAX_TRADE_AMOUNT': lambda x: x > 0,
-            'RISK_TOLERANCE': lambda x: 0 < x < 1
+            'MAX_TRADE_AMOUNT': lambda x: x > 0 and x <= 10000,
+            'RISK_TOLERANCE': lambda x: 0 < x < 0.2,  # More conservative risk range
+            'TRADING_ENABLED': lambda x: isinstance(x, bool)
         }
 
         for key, validator in critical_checks.items():
             value = getattr(self.config, key, None)
+            if value is None:
+                raise ValueError(f"Missing critical configuration: {key}")
             if not validator(value):
                 raise ValueError(f"Invalid configuration for {key}: {value}")
+        
+        # Additional security checks
+        if not os.getenv('COINDCX_API_KEY') or not os.getenv('COINDCX_SECRET_KEY'):
+            logger.warning("⚠️ Exchange API credentials not fully configured!")
 
     def _pre_deployment_checks(self):
         """
-        Perform pre-deployment system checks
+        Enhanced pre-deployment system checks with more detailed logging
         """
-        logger.info("🔍 Performing Pre-Deployment System Checks")
+        logger.info("🔍 Performing Comprehensive Pre-Deployment System Checks")
         
-        # Check Python version
-        python_version = platform.python_version()
-        logger.info(f"Python Version: {python_version}")
+        # Detailed system information
+        system_info = {
+            "Python Version": platform.python_version(),
+            "OS": platform.system(),
+            "OS Version": platform.version(),
+            "Machine Architecture": platform.machine(),
+            "Processor": platform.processor(),
+            "CPU Cores": psutil.cpu_count(),
+            "Total Memory (GB)": f"{psutil.virtual_memory().total / (1024**3):.2f}",
+            "Available Memory (GB)": f"{psutil.virtual_memory().available / (1024**3):.2f}"
+        }
         
-        # Check system resources
-        logger.info(f"CPU Cores: {psutil.cpu_count()}")
-        logger.info(f"Total Memory: {psutil.virtual_memory().total / (1024**3):.2f} GB")
+        for key, value in system_info.items():
+            logger.info(f"📊 {key}: {value}")
+        
+        # Resource utilization warnings
+        if psutil.virtual_memory().percent > 80:
+            logger.warning("⚠️ High memory utilization detected! Consider scaling resources.")
+        
+        if psutil.cpu_percent() > 70:
+            logger.warning("⚠️ High CPU utilization detected! Performance might be impacted.")
 
 def create_app():
     """

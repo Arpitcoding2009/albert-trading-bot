@@ -1,44 +1,44 @@
 # Core Python Libraries
-numpy==1.24.3
-pandas==1.5.3
+numpy
+pandas
 
 # Machine Learning
-scikit-learn==1.2.2
-optuna==2.10.0
+scikit-learn
+optuna
 
 # Trading and Exchange
-ccxt==1.70.3
-pandas-ta==0.3.14b
-numpy-financial==1.0.0
+ccxt
+pandas-ta
+numpy-financial
 
 # Web Framework
-fastapi==0.95.1
-uvicorn==0.22.0
-gunicorn==20.1.0
+fastapi
+uvicorn
+gunicorn
 
 # Performance and Bindings
-pybind11==2.10.4
-setuptools==67.6.1
+pybind11
+setuptools
 
 # Deployment and Configuration
-python-dotenv==1.0.0
-python-jose==3.3.0
-passlib==1.7.4
+python-dotenv
+python-jose
+passlib
 
 # Monitoring and Logging
-sentry-sdk==1.22.2
-psutil==5.9.5
+sentry-sdk
+psutil
 
 # Security
-cryptography==40.0.2
+cryptography
 
 # Development and Testing
-pytest==7.3.1
-coverage==7.2.3
+pytest
+coverage
 
 # Additional Utilities
-requests==2.30.0
-websockets==11.0.3
+requests
+websockets
 
 # Compatibility and System
-typing-extensions==4.5.0
+typing-extensions
