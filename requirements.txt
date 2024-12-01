@@ -1,44 +1,40 @@
 # Core Python Libraries
 numpy
 pandas
+typing-extensions
 
-# Machine Learning
-scikit-learn
-optuna
+# Web Framework
+fastapi
+uvicorn
+gunicorn
+python-jose
+python-dotenv
 
 # Trading and Exchange
 ccxt
 pandas-ta
 numpy-financial
 
-# Web Framework
-fastapi
-uvicorn
-gunicorn
+# Machine Learning
+scikit-learn
+optuna
 
-# Performance and Bindings
-pybind11
-setuptools
-
-# Deployment and Configuration
-python-dotenv
-python-jose
-passlib
-
-# Monitoring and Logging
-sentry-sdk
+# Performance and Monitoring
 psutil
+sentry-sdk
 
 # Security
 cryptography
-
-# Development and Testing
-pytest
-coverage
+passlib
 
 # Additional Utilities
 requests
 websockets
 
-# Compatibility and System
-typing-extensions
+# Development and Deployment
+setuptools
+pybind11
+
+# Testing
+pytest
+coverage

@@ -30,7 +30,7 @@ services:
     pip install setuptools wheel
     python src/cpp/setup.py build_ext --inplace
   startCommand: |
-    gunicorn --workers 4 --worker-class uvicorn.workers.UvicornWorker --timeout 180 deploy:app
+    gunicorn --workers 4 --worker-class uvicorn.workers.UvicornWorker --timeout 180 --bind 0.0.0.0:$PORT deploy:app
   envVars:
     - key: PYTHON_VERSION
       value: 3.10.12
@@ -65,9 +65,9 @@ services:
     - key: TRADING_PAIR
       value: BTC/USDT
     - key: MAX_TRADE_AMOUNT
-      value: 1000
+      value: "1000"
     - key: RISK_TOLERANCE
-      value: 0.02
+      value: "0.02"
     
     # Logging and Monitoring
     - key: LOG_LEVEL
