@@ -9,7 +9,59 @@ services:
   envVars:
     - key: PYTHON_VERSION
       value: 3.10.0
+    
+    # Cryptocurrency Exchange API Credentials (IMPORTANT: Set these in Render Dashboard)
     - key: COINDCX_API_KEY
       sync: false
     - key: COINDCX_SECRET_KEY
       sync: false
+    
+    # Security Settings
+    - key: SECRET_KEY
+      generateValue: true
+    - key: DEBUG
+      value: false
+    
+    # Machine Learning Model Configuration
+    - key: MODEL_PATH
+      value: /opt/albert/models/trading_model.h5
+    
+    # Trading Configuration
+    - key: TRADING_ENABLED
+      value: false
+    - key: MAX_TRADE_AMOUNT
+      value: 100
+    - key: RISK_TOLERANCE
+      value: 0.02
+    
+    # Logging and Monitoring
+    - key: LOG_LEVEL
+      value: WARNING
+    - key: SENTRY_DSN
+      sync: false
+    
+    # Performance Optimization
+    - key: CACHE_BACKEND
+      value: redis
+    - key: REDIS_URL
+      sync: false
+    
+    # Compliance and Security
+    - key: COMPLIANCE_CHECK_ENABLED
+      value: true
+    - key: RATE_LIMIT_REQUESTS
+      value: 100
+    - key: RATE_LIMIT_WINDOW
+      value: 60
+
+  # Optional: Add database if needed
+  # database:
+  #   - name: albert-trading-db
+  #     plan: free
+
+# Optional: Background worker for trading tasks
+# - type: worker
+#   name: albert-trading-worker
+#   env: python3.10
+#   buildCommand: pip install -r requirements.txt
+#   startCommand: python src/workers/trading_worker.py
