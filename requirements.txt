@@ -1,0 +1,12 @@
+pandas
+numpy
+ccxt
+talib
+joblib
+scikit-learn
+optuna
+tensorflow
+ta
+fastapi
+gunicorn
+uvicorn
