@@ -1,14 +1,20 @@
 services:
 - type: web
   name: albert-trading-bot
-  env: python3.10
+  env: python
+  region: us-west
+  branch: main
   buildCommand: |
-    python -m pip install --upgrade pip
+    python -m venv venv
+    source venv/bin/activate
     pip install -r requirements.txt
-  startCommand: gunicorn src.web.app:app --worker-class uvicorn.workers.UvicornWorker
+    python src/cpp/setup.py build_ext --inplace
+  startCommand: |
+    source venv/bin/activate
+    python deploy.py
   envVars:
     - key: PYTHON_VERSION
-      value: 3.10.0
+      value: 3.9.7
     
     # Cryptocurrency Exchange API Credentials (IMPORTANT: Set these in Render Dashboard)
     - key: COINDCX_API_KEY
@@ -30,13 +36,13 @@ services:
     - key: TRADING_ENABLED
       value: false
     - key: MAX_TRADE_AMOUNT
-      value: 100
+      value: 1000
     - key: RISK_TOLERANCE
       value: 0.02
     
     # Logging and Monitoring
     - key: LOG_LEVEL
-      value: WARNING
+      value: INFO
     - key: SENTRY_DSN
       sync: false
     
@@ -54,10 +60,14 @@ services:
     - key: RATE_LIMIT_WINDOW
       value: 60
 
-  # Optional: Add database if needed
-  # database:
-  #   - name: albert-trading-db
-  #     plan: free
+  plan: free
+  autoDeploy: true
+  healthCheckPath: /health
+
+# Optional: Add database if needed
+# database:
+#   - name: albert-trading-db
+#     plan: free
 
 # Optional: Background worker for trading tasks
 # - type: worker

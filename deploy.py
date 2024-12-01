@@ -4,6 +4,11 @@ import subprocess
 import platform
 import logging
 from typing import List, Dict
+import uvicorn
+from fastapi import FastAPI, BackgroundTasks
+from config import get_config
+from datetime import datetime
+import psutil
 
 class AlbertDeploymentManager:
     def __init__(self):
@@ -140,6 +145,65 @@ class AlbertDeploymentManager:
         except Exception as e:
             self.logger.error(f"Bot Launch Failed: {e}")
 
+    def start_web_service(self):
+        """
+        Start web service for deployment monitoring and health checks
+        """
+        app = FastAPI()
+
+        @app.get("/health")
+        async def health_check(background_tasks: BackgroundTasks):
+            """
+            Comprehensive health check endpoint
+            """
+            config = get_config()
+            health_status = {
+                "status": "healthy",
+                "trading_enabled": config.TRADING_ENABLED,
+                "max_trade_amount": config.MAX_TRADE_AMOUNT,
+                "risk_tolerance": config.RISK_TOLERANCE,
+                "deployment_timestamp": datetime.now().isoformat()
+            }
+            
+            # Optional: Background task for additional monitoring
+            background_tasks.add_task(self.monitor_system_resources)
+            
+            return health_status
+
+        @app.get("/metrics")
+        async def system_metrics():
+            """
+            Provide system and deployment metrics
+            """
+            return {
+                "python_version": platform.python_version(),
+                "os": platform.system(),
+                "architecture": platform.machine(),
+                "processor": platform.processor()
+            }
+
+        uvicorn_config = uvicorn.Config(
+            app, 
+            host="0.0.0.0", 
+            port=int(os.getenv("PORT", 8000))
+        )
+        server = uvicorn.Server(uvicorn_config)
+        
+        self.logger.info("🌐 Web Service Initialized")
+        return server
+
+    def monitor_system_resources(self):
+        """
+        Background monitoring of system resources
+        """
+        try:
+            cpu_usage = psutil.cpu_percent()
+            memory_usage = psutil.virtual_memory().percent
+            
+            self.logger.info(f"System Resources: CPU {cpu_usage}%, Memory {memory_usage}%")
+        except ImportError:
+            self.logger.warning("psutil not available for resource monitoring")
+
     def deploy(self):
         """
         Comprehensive deployment workflow
@@ -161,7 +225,15 @@ class AlbertDeploymentManager:
 
 def main():
     deployment_manager = AlbertDeploymentManager()
+    
+    # Start deployment workflow
     deployment_manager.deploy()
+    
+    # Start web service
+    web_server = deployment_manager.start_web_service()
+    
+    # Run server
+    web_server.run()
 
 if __name__ == "__main__":
     main()
