@@ -7,42 +7,84 @@ __pycache__/
 env/
 venv/
 .venv/
+*.egg-info/
 
-# C++ build artifacts
+# Sensitive Information
+*.env
+secrets.json
+credentials.json
+
+# C++ Build Artifacts
 *.pyd
 *.dll
 *.lib
 *.exp
+build/
+dist/
+*.egg
 
-# Java
-*.class
-*.jar
+# Logs and Databases
+*.log
+*.sqlite3
+logs/
 
-# IDEs and editors
+# IDE and Editor Files
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
-# Logs and databases
-*.log
-*.sqlite3
-
-# Environment files
-.env
-*.env
-
-# Machine Learning
-*.model
-*.h5
-*.pkl
-
-# OS generated files
+# OS Generated Files
 .DS_Store
 Thumbs.db
 
-# Project specific
-config/secrets.yaml
-config/api_keys.yaml
-*.key
-*.pem
+# Machine Learning and Model Files
+*.pkl
+*.model
+*.h5
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Deployment and Temporary Files
+*.tmp
+*.bak
+.temp/
+
+# Performance and Profiling
+*.prof
+*.out
+
+# Compiled Source
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Dependency Directories
+node_modules/
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

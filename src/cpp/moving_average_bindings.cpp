@@ -4,8 +4,9 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(moving_average, m) {
+PYBIND11_MODULE(moving_average_module, m) {
+    m.doc() = "High-Performance Moving Average Calculation";
     m.def("moving_average", &moving_average, 
-          "Compute the moving average of a list of numbers", 
-          py::arg("data"), py::arg("period"));
+          "Compute moving average of a vector", 
+          py::arg("data"), py::arg("window"));
 }

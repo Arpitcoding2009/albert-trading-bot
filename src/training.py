@@ -2,15 +2,8 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import ccxt
-from pyti.simple_moving_average import simple_moving_average as sma
-from pyti.relative_strength_index import relative_strength_index as rsi
-from pyti.moving_average_convergence_divergence import moving_average_convergence_divergence as macd
-from pyti.bollinger_bands import percent_b
-from pyti.average_true_range import average_true_range as atr
-from pyti.on_balance_volume import on_balance_volume as obv
-from pyti.money_flow_index import money_flow_index as mfi
-from pyti.commodity_channel_index import commodity_channel_index as cci
-import joblib
+import pandas_ta as ta
+import numpy_financial as npf
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
@@ -88,16 +81,18 @@ class TradingBotTrainer:
             return None
 
     def calculate_advanced_features(self, df: pd.DataFrame) -> pd.DataFrame:
-        df['sma'] = sma(df['close'].tolist(), period=14)
-        df['rsi'] = rsi(df['close'].tolist(), period=14)
-        macd_line, signal_line = macd(df['close'].tolist())
-        df['macd'] = macd_line
-        df['macd_signal'] = signal_line
-        df['bb_percent_b'] = percent_b(df['close'].tolist(), period=20)
-        df['atr'] = atr(df['high'].tolist(), df['low'].tolist(), df['close'].tolist(), period=14)
-        df['obv'] = obv(df['close'].tolist(), df['volume'].tolist())
-        df['mfi'] = mfi(df['high'].tolist(), df['low'].tolist(), df['close'].tolist(), df['volume'].tolist(), period=14)
-        df['cci'] = cci(df['high'].tolist(), df['low'].tolist(), df['close'].tolist(), period=20)
+        df['sma'] = ta.sma(df['close'], length=14)
+        df['rsi'] = ta.rsi(df['close'], length=14)
+        macd = ta.macd(df['close'])
+        df['macd'] = macd['MACD_12_26_9']
+        df['macd_signal'] = macd['MACDs_12_26_9']
+        bbands = ta.bbands(df['close'], length=20)
+        df['bb_upper'] = bbands['BBU_20_2.0']
+        df['bb_lower'] = bbands['BBL_20_2.0']
+        df['atr'] = ta.atr(df['high'], df['low'], df['close'], length=14)
+        df['obv'] = ta.obv(df['close'], df['volume'])
+        df['mfi'] = ta.mfi(df['high'], df['low'], df['close'], df['volume'], length=14)
+        df['cci'] = ta.cci(df['high'], df['low'], df['close'], length=20)
         return df
 
     def objective(self, trial):
@@ -133,7 +128,7 @@ class TradingBotTrainer:
 
     def prepare_training_data(self, df: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
         feature_columns = [
-            'sma', 'rsi', 'macd', 'macd_signal', 'bb_percent_b', 'atr', 'obv', 'mfi', 'cci',
+            'sma', 'rsi', 'macd', 'macd_signal', 'bb_upper', 'bb_lower', 'atr', 'obv', 'mfi', 'cci',
             'stoch_k', 'stoch_d', 'williams_r', 'ultimate_osc',
             'bb_upper', 'bb_middle', 'bb_lower'
         ]
@@ -192,24 +187,33 @@ class EnhancedTradingBotTrainer:
         self.cpp_moving_average = moving_average_module.moving_average
         self.java_performance_optimizer = PerformanceOptimizer
 
-    def calculate_advanced_features(self, df):
-        # Use C++ moving average
-        df['cpp_sma'] = self.cpp_moving_average(df['close'].tolist(), 14)
-        
-        # Use Java RSI calculation
-        prices = df['close'].tolist()
-        df['java_rsi'] = self.java_performance_optimizer.calculateRSI(prices, 14)
-        
+    def calculate_technical_indicators(self, df):
+        df['sma_20'] = ta.sma(df['close'], length=20)
+        df['ema_50'] = ta.ema(df['close'], length=50)
+        df['rsi'] = ta.rsi(df['close'], length=14)
+        macd = ta.macd(df['close'])
+        df['macd'] = macd['MACD_12_26_9']
+        df['macd_signal'] = macd['MACDs_12_26_9']
+        bbands = ta.bbands(df['close'], length=20)
+        df['bb_upper'] = bbands['BBU_20_2.0']
+        df['bb_lower'] = bbands['BBL_20_2.0']
         return df
 
-    def optimize_performance(self, data):
-        # Hybrid performance optimization using C++ and Java
-        cpp_ma = self.cpp_moving_average(data, 14)
-        java_rsi = self.java_performance_optimizer.calculateRSI(data, 14)
-        
+    def generate_trading_signals(self, df):
+        df = self.calculate_technical_indicators(df)
+        df['signal'] = 0
+        df.loc[(df['rsi'] < 30) & (df['close'] > df['sma_20']), 'signal'] = 1   # Buy signal
+        df.loc[(df['rsi'] > 70) & (df['close'] < df['sma_20']), 'signal'] = -1  # Sell signal
+        return df
+
+    def optimize_performance(self, prices):
+        cash_flows = np.array(prices)
+        initial_investment = cash_flows[0]
+        npv = npf.npv(0.1, cash_flows) - initial_investment
         return {
-            'moving_average': cpp_ma,
-            'rsi': java_rsi
+            'moving_average': np.mean(prices),
+            'npv': npv,
+            'volatility': np.std(prices)
         }
 
 class TradingModel:
@@ -230,17 +234,20 @@ class TradingModel:
         self.scaler = MinMaxScaler()
 
     def prepare_features(self, df: pd.DataFrame) -> np.ndarray:
-        df['rsi'] = rsi(df['close'].tolist(), period=14)
-        df['macd'] = macd(df['close'].tolist())
-        df['bb_high'] = percent_b(df['close'].tolist(), period=20)
-        df['bb_low'] = percent_b(df['close'].tolist(), period=20)
-        df['atr'] = atr(df['high'].tolist(), df['low'].tolist(), df['close'].tolist(), period=14)
-        df['obv'] = obv(df['close'].tolist(), df['volume'].tolist())
-        df['mfi'] = mfi(df['high'].tolist(), df['low'].tolist(), df['close'].tolist(), df['volume'].tolist(), period=14)
-        df['cci'] = cci(df['high'].tolist(), df['low'].tolist(), df['close'].tolist(), period=20)
+        df['rsi'] = ta.rsi(df['close'], length=14)
+        macd = ta.macd(df['close'])
+        df['macd'] = macd['MACD_12_26_9']
+        df['macd_signal'] = macd['MACDs_12_26_9']
+        bbands = ta.bbands(df['close'], length=20)
+        df['bb_upper'] = bbands['BBU_20_2.0']
+        df['bb_lower'] = bbands['BBL_20_2.0']
+        df['atr'] = ta.atr(df['high'], df['low'], df['close'], length=14)
+        df['obv'] = ta.obv(df['close'], df['volume'])
+        df['mfi'] = ta.mfi(df['high'], df['low'], df['close'], df['volume'], length=14)
+        df['cci'] = ta.cci(df['high'], df['low'], df['close'], length=20)
         df['price_change'] = df['close'].pct_change()
         df['volume_change'] = df['volume'].pct_change()
-        features = ['close', 'volume', 'rsi', 'macd', 'bb_high', 'bb_low', 'atr', 'obv', 'mfi', 'price_change', 'volume_change']
+        features = ['close', 'volume', 'rsi', 'macd', 'macd_signal', 'bb_upper', 'bb_lower', 'atr', 'obv', 'mfi', 'price_change', 'volume_change']
         scaled_data = self.scaler.fit_transform(df[features])
         sequences = []
         for i in range(60, len(scaled_data)):
@@ -611,11 +618,94 @@ class ExplainableAI:
         # Placeholder for explainable AI logic
         pass
 
+class AdvancedTradingStrategy:
+    def __init__(self, exchange_name='binance', trading_pair='BTC/USDT'):
+        self.exchange = getattr(ccxt, exchange_name)()
+        self.trading_pair = trading_pair
+        self.model = RandomForestClassifier(n_estimators=100, random_state=42)
+        self.scaler = StandardScaler()
+
+    def fetch_historical_data(self, timeframe='1h', limit=500):
+        """Fetch historical market data"""
+        ohlcv = self.exchange.fetch_ohlcv(self.trading_pair, timeframe, limit=limit)
+        df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+        df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+        return df
+
+    def calculate_features(self, df):
+        """Calculate advanced technical indicators"""
+        df['rsi'] = ta.rsi(df['close'], length=14)
+        df['macd'] = ta.macd(df['close'])['MACD_12_26_9']
+        df['bb_upper'] = ta.bbands(df['close'])['BBU_20_2.0']
+        df['bb_lower'] = ta.bbands(df['close'])['BBL_20_2.0']
+        df['atr'] = ta.atr(df['high'], df['low'], df['close'], length=14)
+        
+        # Generate trading signals
+        df['signal'] = 0
+        df.loc[(df['rsi'] < 30) & (df['close'] < df['bb_lower']), 'signal'] = 1   # Buy signal
+        df.loc[(df['rsi'] > 70) & (df['close'] > df['bb_upper']), 'signal'] = -1  # Sell signal
+        
+        return df
+
+    def prepare_training_data(self, df):
+        """Prepare data for machine learning model"""
+        features = ['close', 'volume', 'rsi', 'macd', 'bb_upper', 'bb_lower', 'atr']
+        X = self.scaler.fit_transform(df[features])
+        y = df['signal']
+        
+        return train_test_split(X, y, test_size=0.2, random_state=42)
+
+    def train_model(self, X_train, y_train):
+        """Train machine learning model"""
+        self.model.fit(X_train, y_train)
+        return self.model.score(X_train, y_train)
+
+    def predict_trade_signal(self, current_data):
+        """Predict trading signal for current market conditions"""
+        scaled_data = self.scaler.transform(current_data)
+        return self.model.predict(scaled_data)[0]
+
+    def risk_management(self, signal, current_price):
+        """Basic risk management strategy"""
+        risk_tolerance = 0.02  # 2% risk per trade
+        max_trade_amount = 1000  # USD
+        
+        stop_loss = current_price * (1 - risk_tolerance) if signal == 1 else current_price * (1 + risk_tolerance)
+        trade_size = max_trade_amount / current_price
+        
+        return {
+            'signal': signal,
+            'stop_loss': stop_loss,
+            'trade_size': trade_size
+        }
+
+def main():
+    strategy = AdvancedTradingStrategy()
+    
+    # Fetch and prepare data
+    historical_data = strategy.fetch_historical_data()
+    processed_data = strategy.calculate_features(historical_data)
+    
+    # Train model
+    X_train, X_test, y_train, y_test = strategy.prepare_training_data(processed_data)
+    training_accuracy = strategy.train_model(X_train, y_train)
+    
+    print(f"Model Training Accuracy: {training_accuracy * 100:.2f}%")
+    
+    # Simulate current market conditions
+    current_data = processed_data.iloc[-1:][['close', 'volume', 'rsi', 'macd', 'bb_upper', 'bb_lower', 'atr']]
+    trade_signal = strategy.predict_trade_signal(current_data)
+    risk_management_details = strategy.risk_management(trade_signal, current_data['close'].values[0])
+    
+    print("Trading Signal Analysis:")
+    print(f"Signal: {'Buy' if trade_signal == 1 else 'Sell' if trade_signal == -1 else 'Hold'}")
+    print(f"Risk Management: {risk_management_details}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
 def cleanup_jvm():
     jpype.shutdownJVM()
 
 import atexit
 atexit.register(cleanup_jvm)
-
-if __name__ == "__main__":
-    asyncio.run(main())
