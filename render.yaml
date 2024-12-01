@@ -1,0 +1,15 @@
+services:
+- type: web
+  name: albert-trading-bot
+  env: python3.10
+  buildCommand: |
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt
+  startCommand: gunicorn src.web.app:app --worker-class uvicorn.workers.UvicornWorker
+  envVars:
+    - key: PYTHON_VERSION
+      value: 3.10.0
+    - key: COINDCX_API_KEY
+      sync: false
+    - key: COINDCX_SECRET_KEY
+      sync: false

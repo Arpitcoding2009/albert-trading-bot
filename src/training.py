@@ -2,7 +2,14 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import ccxt
-import talib
+from pyti.simple_moving_average import simple_moving_average as sma
+from pyti.relative_strength_index import relative_strength_index as rsi
+from pyti.moving_average_convergence_divergence import moving_average_convergence_divergence as macd
+from pyti.bollinger_bands import percent_b
+from pyti.average_true_range import average_true_range as atr
+from pyti.on_balance_volume import on_balance_volume as obv
+from pyti.money_flow_index import money_flow_index as mfi
+from pyti.commodity_channel_index import commodity_channel_index as cci
 import joblib
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.model_selection import train_test_split, cross_val_score
@@ -13,7 +20,25 @@ import logging
 import tensorflow as tf
 from typing import Dict, List, Tuple, Optional
 import asyncio
-import ta
+import os
+import json
+import sys
+import importlib.util
+import jpype
+import jpype.imports
+
+# Add paths for C++ and Java modules
+sys.path.append(os.path.abspath('src/cpp'))
+sys.path.append(os.path.abspath('src/java'))
+
+# Dynamic import of C++ moving average module
+spec = importlib.util.spec_from_file_location("moving_average", "src/cpp/moving_average.pyd")
+moving_average_module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(moving_average_module)
+
+# Java module integration (using JPype)
+jpype.startJVM(classpath=['src/java'])
+from com.albert.trading import PerformanceOptimizer
 
 class TradingBotTrainer:
     def __init__(self):
@@ -63,13 +88,16 @@ class TradingBotTrainer:
             return None
 
     def calculate_advanced_features(self, df: pd.DataFrame) -> pd.DataFrame:
-        df['rsi'] = talib.RSI(df['close'])
-        df['macd'], df['macd_signal'], _ = talib.MACD(df['close'])
-        df['upper'], df['middle'], df['lower'] = talib.BBANDS(df['close'])
-        df['adx'] = talib.ADX(df['high'], df['low'], df['close'])
-        df['obv'] = talib.OBV(df['close'], df['volume'])
-        df['cci'] = talib.CCI(df['high'], df['low'], df['close'])
-        df['mfi'] = talib.MFI(df['high'], df['low'], df['close'], df['volume'])
+        df['sma'] = sma(df['close'].tolist(), period=14)
+        df['rsi'] = rsi(df['close'].tolist(), period=14)
+        macd_line, signal_line = macd(df['close'].tolist())
+        df['macd'] = macd_line
+        df['macd_signal'] = signal_line
+        df['bb_percent_b'] = percent_b(df['close'].tolist(), period=20)
+        df['atr'] = atr(df['high'].tolist(), df['low'].tolist(), df['close'].tolist(), period=14)
+        df['obv'] = obv(df['close'].tolist(), df['volume'].tolist())
+        df['mfi'] = mfi(df['high'].tolist(), df['low'].tolist(), df['close'].tolist(), df['volume'].tolist(), period=14)
+        df['cci'] = cci(df['high'].tolist(), df['low'].tolist(), df['close'].tolist(), period=20)
         return df
 
     def objective(self, trial):
@@ -105,7 +133,7 @@ class TradingBotTrainer:
 
     def prepare_training_data(self, df: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
         feature_columns = [
-            'rsi', 'macd', 'macd_signal', 'adx', 'obv', 'cci', 'mfi',
+            'sma', 'rsi', 'macd', 'macd_signal', 'bb_percent_b', 'atr', 'obv', 'mfi', 'cci',
             'stoch_k', 'stoch_d', 'williams_r', 'ultimate_osc',
             'bb_upper', 'bb_middle', 'bb_lower'
         ]
@@ -159,6 +187,31 @@ class TradingBotTrainer:
             logging.error("Metrics file not found.")
             return {}
 
+class EnhancedTradingBotTrainer:
+    def __init__(self):
+        self.cpp_moving_average = moving_average_module.moving_average
+        self.java_performance_optimizer = PerformanceOptimizer
+
+    def calculate_advanced_features(self, df):
+        # Use C++ moving average
+        df['cpp_sma'] = self.cpp_moving_average(df['close'].tolist(), 14)
+        
+        # Use Java RSI calculation
+        prices = df['close'].tolist()
+        df['java_rsi'] = self.java_performance_optimizer.calculateRSI(prices, 14)
+        
+        return df
+
+    def optimize_performance(self, data):
+        # Hybrid performance optimization using C++ and Java
+        cpp_ma = self.cpp_moving_average(data, 14)
+        java_rsi = self.java_performance_optimizer.calculateRSI(data, 14)
+        
+        return {
+            'moving_average': cpp_ma,
+            'rsi': java_rsi
+        }
+
 class TradingModel:
     def __init__(self):
         self.model = tf.keras.Sequential([
@@ -177,14 +230,14 @@ class TradingModel:
         self.scaler = MinMaxScaler()
 
     def prepare_features(self, df: pd.DataFrame) -> np.ndarray:
-        df['rsi'] = ta.momentum.rsi(df['close'])
-        df['macd'] = ta.trend.macd_diff(df['close'])
-        df['bb_high'] = ta.volatility.bollinger_hband(df['close'])
-        df['bb_low'] = ta.volatility.bollinger_lband(df['close'])
-        df['atr'] = ta.volatility.average_true_range(df['high'], df['low'], df['close'])
-        df['obv'] = ta.volume.on_balance_volume(df['close'], df['volume'])
-        df['mfi'] = ta.volume.money_flow_index(df['high'], df['low'], df['close'], df['volume'])
-        df['cci'] = ta.trend.cci(df['high'], df['low'], df['close'])
+        df['rsi'] = rsi(df['close'].tolist(), period=14)
+        df['macd'] = macd(df['close'].tolist())
+        df['bb_high'] = percent_b(df['close'].tolist(), period=20)
+        df['bb_low'] = percent_b(df['close'].tolist(), period=20)
+        df['atr'] = atr(df['high'].tolist(), df['low'].tolist(), df['close'].tolist(), period=14)
+        df['obv'] = obv(df['close'].tolist(), df['volume'].tolist())
+        df['mfi'] = mfi(df['high'].tolist(), df['low'].tolist(), df['close'].tolist(), df['volume'].tolist(), period=14)
+        df['cci'] = cci(df['high'].tolist(), df['low'].tolist(), df['close'].tolist(), period=20)
         df['price_change'] = df['close'].pct_change()
         df['volume_change'] = df['volume'].pct_change()
         features = ['close', 'volume', 'rsi', 'macd', 'bb_high', 'bb_low', 'atr', 'obv', 'mfi', 'price_change', 'volume_change']
@@ -557,6 +610,12 @@ class ExplainableAI:
     def provide_explanations(self):
         # Placeholder for explainable AI logic
         pass
+
+def cleanup_jvm():
+    jpype.shutdownJVM()
+
+import atexit
+atexit.register(cleanup_jvm)
 
 if __name__ == "__main__":
     asyncio.run(main())
