@@ -1,80 +1,79 @@
-# 🚀 Albert: Advanced AI Cryptocurrency Trading Bot
+# 🚀 Albert AI Trading Bot
 
-## 🔬 Project Overview
-Albert is a cutting-edge, AI-powered cryptocurrency trading platform designed for high-performance, intelligent trading across multiple exchanges.
+## Overview
+Albert is an advanced AI-powered cryptocurrency trading bot designed to autonomously trade and maximize profits through intelligent decision-making.
 
-### 🌟 Key Features
-- **Multi-Exchange Support**: Binance, Coinbase, Kraken
-- **Advanced Machine Learning**: Random Forest Trading Strategy
-- **Real-Time WebSocket Trading**
-- **Comprehensive Risk Management**
-- **High-Performance C++ Modules**
+## 🌟 Key Features
+- AI-Driven Trading Strategies
+- Real-time Market Analysis
+- Advanced Risk Management
+- WebSocket Real-time Updates
+- Comprehensive Dashboard
 
-## 🛠 Technical Architecture
-- **Language**: Python 3.8-3.10
-- **Performance Modules**: C++ with pybind11
-- **Machine Learning**: Scikit-Learn
-- **Exchange Integration**: CCXT
+## 🛠 Technology Stack
+- **Backend**: Python, FastAPI
+- **AI/ML**: Scikit-learn, TensorFlow
+- **Trading**: CCXT
+- **Frontend**: Tailwind CSS, Chart.js
 
-## 🚀 Quick Start
+## 🚀 Deployment
 
 ### Prerequisites
-- Python 3.8-3.10
-- Microsoft Visual C++ Build Tools
-- Cryptocurrency Exchange API Credentials
+- Python 3.8+
+- Binance/CoinDCX API Credentials
 
-### Installation
+### Local Setup
+1. Clone the repository
 ```bash
-# Clone the repository
 git clone https://github.com/yourusername/albert-trading-bot.git
 cd albert-trading-bot
+```
 
-# Create virtual environment
+2. Create virtual environment
+```bash
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
 
-# Install dependencies
+3. Install dependencies
+```bash
 pip install -r requirements.txt
-
-# Compile C++ Modules
-python src/cpp/setup.py build_ext --inplace
 ```
 
-### Configuration
-1. Copy `.env.example` to `.env`
-2. Fill in your exchange API credentials
-3. Customize trading parameters
+4. Set Environment Variables
+Create a `.env` file with:
+```
+BINANCE_API_KEY=your_api_key
+BINANCE_SECRET_KEY=your_secret_key
+```
 
-### Deployment
+5. Run the Bot
 ```bash
-# Run deployment script
-python deploy.py
+python deploy_enhanced.py
 ```
 
-## 🧪 Testing
-```bash
-pytest tests/
-```
+### Render Deployment
+1. Fork the repository
+2. Connect Render to your GitHub
+3. Create a Web Service
+   - Build Command: `pip install -r requirements.txt`
+   - Start Command: `python deploy_enhanced.py`
 
-## 🔒 Security
-- Secure environment variable management
-- No hardcoded API keys
-- Comprehensive input validation
+## 🔐 Security
+- SSL/TLS Encryption
+- API Key Protection
+- Two-Factor Authentication
 
-## ⚠️ Disclaimer
-- Cryptocurrency trading involves significant financial risk
-- Use at your own discretion
-- Not financial advice
+## 📊 Performance
+- Targeted Daily Profit: 15%
+- AI-Enhanced Trading Strategies
+- Continuous Learning Mechanism
 
 ## 🤝 Contributing
-1. Fork the repository
-2. Create feature branch
-3. Commit changes
-4. Push to branch
-5. Create Pull Request
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
 ## 📜 License
-MIT License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
----
-Made with ❤️ by the Albert Trading Team
+## 🚨 Disclaimer
+Cryptocurrency trading involves significant risk. Use this bot at your own risk and always monitor its performance.
