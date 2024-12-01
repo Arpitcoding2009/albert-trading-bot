@@ -23,7 +23,7 @@ def test_technical_analysis():
 
 def test_exchange_connection():
     try:
-        exchanges = [ccxt.binance, ccxt.coinbase, ccxt.kraken]
+        exchanges = [ccxt.coindcx]
         for ExchangeClass in exchanges:
             try:
                 exchange = ExchangeClass()

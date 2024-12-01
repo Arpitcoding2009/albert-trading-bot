@@ -42,14 +42,10 @@ logger = logging.getLogger(__name__)
 
 class AITradingEngine:
     def __init__(self):
-        # Initialize exchange (using Binance as an example)
-        self.exchange = ccxt.binance({
-            'apiKey': os.getenv('BINANCE_API_KEY', ''),
-            'secret': os.getenv('BINANCE_SECRET_KEY', ''),
-            'enableRateLimit': True,
-            'options': {
-                'defaultType': 'future'  # Futures trading
-            }
+        # Initialize exchange (using CoinDCX)
+        self.exchange = ccxt.coindcx({
+            'apiKey': os.getenv('COINDCX_API_KEY', ''),
+            'secret': os.getenv('COINDCX_SECRET_KEY', ''),
         })
         
         # AI Model for Price Prediction

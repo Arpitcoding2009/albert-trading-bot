@@ -12,7 +12,7 @@ python-dotenv
 websockets
 
 # Trading and Exchange
-ccxt
+ccxt==3.1.14
 pandas-ta
 numpy-financial
 

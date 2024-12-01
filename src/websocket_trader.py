@@ -13,19 +13,17 @@ from src.training import AdvancedTradingStrategy
 
 class UltraAdvancedTradingBot:
     def __init__(self, 
-                 exchange_name: str = 'binance', 
+                 exchange_name: str = 'coindcx', 
                  trading_pair: str = 'BTC/USDT'):
         """
         Initializes an ultra-advanced cryptocurrency trading bot
         with multi-exchange, multi-strategy support
         """
         self.exchanges = {
-            'binance': ccxt.binance(),
-            'coinbase': ccxt.coinbase(),
-            'kraken': ccxt.kraken()
+            'coindcx': ccxt.coindcx(),
         }
         
-        self.current_exchange = self.exchanges.get(exchange_name, self.exchanges['binance'])
+        self.current_exchange = self.exchanges.get(exchange_name, self.exchanges['coindcx'])
         self.trading_pair = trading_pair
         
         # Advanced strategy components

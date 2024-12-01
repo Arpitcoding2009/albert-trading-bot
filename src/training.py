@@ -619,7 +619,7 @@ class ExplainableAI:
         pass
 
 class AdvancedTradingStrategy:
-    def __init__(self, exchange_name='binance', trading_pair='BTC/USDT'):
+    def __init__(self, exchange_name='coindcx', trading_pair='BTC/USDT'):
         self.exchange = getattr(ccxt, exchange_name)()
         self.trading_pair = trading_pair
         self.model = RandomForestClassifier(n_estimators=100, random_state=42)

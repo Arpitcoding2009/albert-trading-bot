@@ -37,9 +37,9 @@ services:
       value: 3.9.7
     
     # Cryptocurrency Exchange API Credentials (IMPORTANT: Set these in Render Dashboard)
-    - key: BINANCE_API_KEY
+    - key: COINDCX_API_KEY
       sync: false
-    - key: BINANCE_SECRET_KEY
+    - key: COINDCX_SECRET_KEY
       sync: false
     
     # Security Settings
@@ -62,7 +62,7 @@ services:
     - key: TRADING_STRATEGY
       value: machine_learning
     - key: EXCHANGE_NAME
-      value: binance
+      value: coindcx
     - key: TRADING_PAIR
       value: BTC/USDT
     - key: MAX_TRADE_AMOUNT

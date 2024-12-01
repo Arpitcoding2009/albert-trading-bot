@@ -33,7 +33,7 @@ class SecureConfig:
         try:
             # Environment Variable Loading
             config_mappings = {
-                'EXCHANGE_NAME': ('EXCHANGE_NAME', 'binance'),
+                'EXCHANGE_NAME': ('EXCHANGE_NAME', 'coindcx'),
                 'TRADING_PAIR': ('TRADING_PAIR', 'BTC/USDT'),
                 'API_KEY': ('COINDCX_API_KEY', ''),
                 'SECRET_KEY': ('COINDCX_SECRET_KEY', ''),
