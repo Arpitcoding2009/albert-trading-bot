@@ -162,20 +162,33 @@ def create_app():
     app = FastAPI(title="Albert Trading Bot")
 
     @app.get("/health")
-    async def health_check(background_tasks: BackgroundTasks):
+    async def health_check():
         """
-        Comprehensive health check endpoint
+        Comprehensive health check endpoint with system diagnostics
         """
-        config = get_config()
-        health_status = {
-            "status": "healthy",
-            "trading_enabled": config.TRADING_ENABLED,
-            "max_trade_amount": config.MAX_TRADE_AMOUNT,
-            "risk_tolerance": config.RISK_TOLERANCE,
-            "deployment_timestamp": datetime.now().isoformat()
-        }
-        
-        return health_status
+        try:
+            # Gather system health information
+            health_status = {
+                "status": "healthy",
+                "timestamp": datetime.now().isoformat(),
+                "system": {
+                    "python_version": platform.python_version(),
+                    "os": platform.system(),
+                    "cpu_cores": psutil.cpu_count(),
+                    "memory_total_gb": round(psutil.virtual_memory().total / (1024**3), 2),
+                    "memory_available_gb": round(psutil.virtual_memory().available / (1024**3), 2),
+                    "memory_usage_percent": psutil.virtual_memory().percent
+                },
+                "trading_config": {
+                    "trading_enabled": get_config().TRADING_ENABLED,
+                    "max_trade_amount": get_config().MAX_TRADE_AMOUNT,
+                    "risk_tolerance": get_config().RISK_TOLERANCE
+                }
+            }
+            return health_status
+        except Exception as e:
+            logger.error(f"Health check failed: {e}")
+            return {"status": "error", "message": str(e)}
 
     @app.get("/metrics")
     async def system_metrics():
@@ -202,11 +215,14 @@ def main():
     # Run deployment workflow
     deployment_manager.deploy()
 
+    # Get port from environment, default to 10000
+    port = int(os.getenv("PORT", 10000))
+    
     # Uvicorn configuration
     uvicorn_config = uvicorn.Config(
         app, 
         host="0.0.0.0", 
-        port=int(os.getenv("PORT", 8000))
+        port=port
     )
     server = uvicorn.Server(uvicorn_config)
     
@@ -214,8 +230,16 @@ def main():
     server.run()
 
 if __name__ == "__main__":
+    # Ensure proper handling for both local and Render environments
     if os.environ.get('RENDER') == 'true':
-        server = uvicorn.Server(uvicorn_config)
-        server.run()
+        # Specific configuration for Render
+        port = int(os.getenv("PORT", 10000))
+        uvicorn.run(
+            "deploy:app", 
+            host="0.0.0.0", 
+            port=port, 
+            reload=False
+        )
     else:
+        # Local development
         main()
