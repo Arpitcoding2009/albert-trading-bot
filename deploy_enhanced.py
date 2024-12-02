@@ -225,10 +225,5 @@ app = create_app()
 
 # Main entry point for Render
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 10000))
-    uvicorn.run(
-        "deploy_enhanced:app", 
-        host="0.0.0.0", 
-        port=port, 
-        reload=False
-    )
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", 10000)))

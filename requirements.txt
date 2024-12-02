@@ -1,15 +1,16 @@
 # Core Python Libraries
-numpy
-pandas
+numpy==1.24.3
+pandas==2.0.1
 typing-extensions
 
 # Web Framework
-fastapi
+fastapi==0.95.1
 uvicorn==0.22.0
 gunicorn==20.1.0
-python-jose
+python-jose==3.3.0
+pydantic==1.10.7
 python-dotenv==1.0.0
-websockets
+websockets==11.0.3
 
 # Trading and Exchange
 ccxt==3.1.14
@@ -17,13 +18,14 @@ pandas-ta
 numpy-financial
 
 # Machine Learning
-scikit-learn
+scikit-learn==1.2.2
 optuna
 tensorflow
 torch
 
 # Performance and Monitoring
-psutil
+psutil==5.9.5
+tracemalloc==1.3.0
 sentry-sdk
 
 # Security
