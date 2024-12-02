@@ -1,7 +1,9 @@
 import asyncio
 import json
 from typing import Dict, Any, List
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import ccxt
 import pandas as pd
@@ -29,6 +31,28 @@ class TradingDashboard:
             'trading_volume': 0,
             'active_pairs': []
         }
+        
+        # Advanced Trading Strategies
+        self.trading_strategies = [
+            {
+                'name': 'Quantum Machine Learning',
+                'description': 'Advanced AI-driven predictive trading',
+                'risk_level': 'Medium',
+                'expected_return': '15-25%'
+            },
+            {
+                'name': 'Sentiment-Driven Trading',
+                'description': 'NLP-powered market sentiment analysis',
+                'risk_level': 'Low',
+                'expected_return': '10-20%'
+            },
+            {
+                'name': 'Multi-Exchange Arbitrage',
+                'description': 'Profit from price differences across exchanges',
+                'risk_level': 'High',
+                'expected_return': '20-35%'
+            }
+        ]
     
     async def fetch_market_data(self):
         """
@@ -40,7 +64,7 @@ class TradingDashboard:
                 
                 # Update market data
                 self.market_data['total_market_cap'] += sum(
-                    ticker['info']['volume'] for ticker in tickers.values()
+                    ticker['info'].get('volume', 0) for ticker in tickers.values()
                 )
                 
                 # Track active trading pairs
@@ -56,8 +80,8 @@ class TradingDashboard:
         Generate AI-driven trading insights
         """
         return {
-            'learning_efficiency': np.random.uniform(0.7, 0.95),
-            'predictive_accuracy': self.ai_parameters['predictive_accuracy'],
+            'learning_efficiency': np.random.uniform(0.7, 0.95) * 100,
+            'predictive_accuracy': self.ai_parameters['predictive_accuracy'] * 100,
             'recommended_strategy': self._select_optimal_strategy()
         }
     
@@ -65,12 +89,9 @@ class TradingDashboard:
         """
         Select the most optimal trading strategy based on current market conditions
         """
-        strategies = [
-            'Quantum Machine Learning',
-            'Sentiment-Driven Trading', 
-            'Multi-Exchange Arbitrage'
-        ]
-        return np.random.choice(strategies)
+        return np.random.choice([
+            strategy['name'] for strategy in self.trading_strategies
+        ])
 
 class WebSocketManager:
     def __init__(self):
@@ -94,8 +115,22 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Static files and templates
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
+
 trading_dashboard = TradingDashboard()
 websocket_manager = WebSocketManager()
+
+@app.get("/")
+async def index(request: Request):
+    """
+    Main dashboard rendering
+    """
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "strategies": trading_dashboard.trading_strategies
+    })
 
 @app.websocket("/ws/trading-updates")
 async def trading_websocket(websocket: WebSocket):
@@ -137,26 +172,7 @@ async def get_trading_strategies():
     Retrieve available trading strategies
     """
     return {
-        "strategies": [
-            {
-                "name": "Quantum Machine Learning",
-                "description": "Advanced AI-driven predictive trading",
-                "risk_level": "Medium",
-                "expected_return": "15-25%"
-            },
-            {
-                "name": "Sentiment-Driven Trading",
-                "description": "NLP-powered market sentiment analysis",
-                "risk_level": "Low",
-                "expected_return": "10-20%"
-            },
-            {
-                "name": "Multi-Exchange Arbitrage",
-                "description": "Profit from price differences across exchanges",
-                "risk_level": "High",
-                "expected_return": "20-35%"
-            }
-        ]
+        "strategies": trading_dashboard.trading_strategies
     }
 
 if __name__ == "__main__":
