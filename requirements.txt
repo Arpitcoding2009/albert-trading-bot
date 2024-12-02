@@ -11,38 +11,42 @@ python-jose==3.3.0
 pydantic==1.10.7
 python-dotenv==1.0.0
 websockets==11.0.3
+jinja2==3.1.2
 
 # Trading and Exchange
 ccxt==3.1.14
-pandas-ta
-numpy-financial
+pandas-ta==0.4.1
+numpy-financial==1.0.13
 
 # Machine Learning
 scikit-learn==1.2.2
-optuna
-tensorflow
-torch
+optuna==3.0.6
+tensorflow==2.12.0
+torch==2.0.1
 
 # Performance and Monitoring
 psutil==5.9.5
 tracemalloc==1.3.0
-sentry-sdk
+sentry-sdk==1.15.0
 
 # Security
-cryptography
-passlib
+python-multipart==0.0.5
+cryptography==40.0.1
 
 # Additional Utilities
-requests
-python-multipart
+requests==2.28.2
+passlib==1.9.6
 
 # Development and Deployment
-setuptools
-pybind11
+setuptools==65.6.3
+pybind11==2.12.1
 
 # Testing
-pytest
-coverage
+pytest==7.2.0
+coverage==7.2.2
 
 # Visualization
-matplotlib
+matplotlib==3.7.1
+
+# WebSocket Support
+websockets==11.0.3

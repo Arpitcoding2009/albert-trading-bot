@@ -28,7 +28,7 @@ services:
     python -m pip install --upgrade pip
     pip install -r requirements.txt
   startCommand: |
-    gunicorn --workers 4 --worker-class uvicorn.workers.UvicornWorker --timeout 240 --bind 0.0.0.0:$PORT deploy_enhanced:app
+    python deploy_enhanced.py
   envVars:
     - key: PORT
       value: 10000
