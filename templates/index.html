@@ -3,44 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Albert AI Trading Bot</title>
+    <title>Albert AI: Quantum Trading Intelligence</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #e94560;
+        }
+        .quantum-glow {
+            box-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
+            transition: all 0.3s ease;
+        }
+        .quantum-glow:hover {
+            box-shadow: 0 0 40px rgba(233, 69, 96, 0.8);
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-white">
+<body class="bg-gray-900 text-white font-sans">
     <div class="container mx-auto px-4 py-8">
-        <h1 class="text-4xl font-bold mb-8 text-center">Albert AI Trading Bot Dashboard</h1>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Trading Status Card -->
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <h2 class="text-2xl font-semibold mb-4">Trading Status</h2>
-                <div id="tradingStatus" class="space-y-2">
-                    <p>Status: <span id="botStatus" class="font-bold text-green-500">Active</span></p>
-                    <p>Active Trading Pairs: <span id="activePairs">BTC/USDT, ETH/USDT</span></p>
-                    <p>Max Trade Amount: <span id="maxTradeAmount">$100</span></p>
+        <header class="text-center mb-12">
+            <h1 class="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 mb-4">
+                Albert AI: Quantum Trading Intelligence
+            </h1>
+            <p class="text-xl text-gray-300">
+                Revolutionizing Cryptocurrency Trading with Advanced AI
+            </p>
+        </header>
+
+        <section class="grid md:grid-cols-3 gap-8">
+            <!-- Real-time Market Dashboard -->
+            <div class="bg-gray-800 p-6 rounded-lg quantum-glow">
+                <h2 class="text-2xl font-semibold mb-4">
+                    <i class="fas fa-chart-line mr-2"></i>Market Dashboard
+                </h2>
+                <canvas id="marketChart"></canvas>
+                <div id="marketStats" class="mt-4 text-sm">
+                    <p>Total Market Cap: <span id="marketCap">Loading...</span></p>
+                    <p>24h Volume: <span id="marketVolume">Loading...</span></p>
                 </div>
             </div>
-            
-            <!-- Performance Chart -->
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <h2 class="text-2xl font-semibold mb-4">Performance Metrics</h2>
-                <canvas id="performanceChart"></canvas>
+
+            <!-- AI Trading Intelligence -->
+            <div class="bg-gray-800 p-6 rounded-lg quantum-glow">
+                <h2 class="text-2xl font-semibold mb-4">
+                    <i class="fas fa-brain mr-2"></i>AI Intelligence
+                </h2>
+                <div id="aiIntelligence" class="space-y-3">
+                    <div class="flex justify-between">
+                        <span>Learning Efficiency</span>
+                        <div class="w-1/2 bg-gray-700 rounded-full h-2.5 mt-1">
+                            <div class="bg-green-500 h-2.5 rounded-full" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Predictive Accuracy</span>
+                        <div class="w-1/2 bg-gray-700 rounded-full h-2.5 mt-1">
+                            <div class="bg-blue-500 h-2.5 rounded-full" style="width: 85%"></div>
+                        </div>
+                    </div>
+                </div>
+                <button class="mt-4 w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded">
+                    Activate Advanced AI
+                </button>
             </div>
-        </div>
-        
-        <!-- Real-time Trade Log -->
-        <div class="mt-8 bg-gray-800 p-6 rounded-lg shadow-lg">
-            <h2 class="text-2xl font-semibold mb-4">Recent Trades</h2>
-            <div id="tradeLog" class="overflow-y-auto max-h-64">
-                <!-- Trade logs will be dynamically populated -->
+
+            <!-- Trading Strategies -->
+            <div class="bg-gray-800 p-6 rounded-lg quantum-glow">
+                <h2 class="text-2xl font-semibold mb-4">
+                    <i class="fas fa-network-wired mr-2"></i>Trading Strategies
+                </h2>
+                <ul class="space-y-3">
+                    <li class="flex items-center">
+                        <span class="mr-2 text-green-500">✓</span> 
+                        Quantum Machine Learning
+                    </li>
+                    <li class="flex items-center">
+                        <span class="mr-2 text-green-500">✓</span> 
+                        Sentiment-Driven Trading
+                    </li>
+                    <li class="flex items-center">
+                        <span class="mr-2 text-green-500">✓</span> 
+                        Multi-Exchange Arbitrage
+                    </li>
+                </ul>
+                <div class="mt-4 text-sm text-gray-400">
+                    Strategies Updated: <span id="strategyUpdateTime">Just Now</span>
+                </div>
             </div>
-        </div>
+        </section>
+
+        <!-- Advanced Features Section -->
+        <section class="mt-12 grid md:grid-cols-2 gap-8">
+            <div class="bg-gray-800 p-6 rounded-lg quantum-glow">
+                <h2 class="text-2xl font-semibold mb-4">
+                    <i class="fas fa-shield-alt mr-2"></i>Risk Management
+                </h2>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span>Max Daily Risk</span>
+                        <span class="text-yellow-500">2%</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Portfolio Diversification</span>
+                        <span class="text-green-500">Optimized</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-800 p-6 rounded-lg quantum-glow">
+                <h2 class="text-2xl font-semibold mb-4">
+                    <i class="fas fa-globe mr-2"></i>Multi-Exchange Support
+                </h2>
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="text-center">
+                        <img src="/static/binance-logo.png" alt="Binance" class="mx-auto mb-2 w-12 h-12">
+                        <span class="text-sm">Binance</span>
+                    </div>
+                    <div class="text-center">
+                        <img src="/static/coinbase-logo.png" alt="Coinbase" class="mx-auto mb-2 w-12 h-12">
+                        <span class="text-sm">Coinbase</span>
+                    </div>
+                    <div class="text-center">
+                        <img src="/static/kraken-logo.png" alt="Kraken" class="mx-auto mb-2 w-12 h-12">
+                        <span class="text-sm">Kraken</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-gray-400">
+            <p> 2023 Albert AI. Quantum Intelligence Unleashed.</p>
+        </footer>
     </div>
 
     <script>
-        // WebSocket for real-time updates
-        const socket = new WebSocket('ws://localhost:10000/ws');
+        // WebSocket for Real-time Updates
+        const socket = new WebSocket('ws://localhost:8000/ws/trading-updates');
         
         socket.onmessage = function(event) {
             const data = JSON.parse(event.data);
@@ -48,53 +149,29 @@
         };
 
         function updateDashboard(data) {
-            // Update trading status
-            document.getElementById('botStatus').textContent = data.status;
-            document.getElementById('activePairs').textContent = data.trading_pairs.join(', ');
+            // Update market chart, stats, AI intelligence
+            document.getElementById('marketCap').textContent = 
+                `$${(data.portfolio_value || 0).toLocaleString()}`;
             
-            // Add trade log entry
-            const tradeLog = document.getElementById('tradeLog');
-            const logEntry = document.createElement('div');
-            logEntry.classList.add('mb-2', 'p-2', 'bg-gray-700', 'rounded');
-            logEntry.textContent = `Trade Update: ${new Date(data.timestamp).toLocaleString()}`;
-            tradeLog.prepend(logEntry);
+            document.getElementById('marketVolume').textContent = 
+                `${(data.current_price || 0).toLocaleString()}`;
+            
+            document.getElementById('strategyUpdateTime').textContent = 
+                new Date().toLocaleTimeString();
         }
 
-        // Performance Chart
-        const ctx = document.getElementById('performanceChart').getContext('2d');
-        const performanceChart = new Chart(ctx, {
+        // Market Chart
+        const ctx = document.getElementById('marketChart').getContext('2d');
+        new Chart(ctx, {
             type: 'line',
             data: {
                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
                 datasets: [{
                     label: 'Portfolio Value',
-                    data: [1000, 1200, 1100, 1350, 1500, 1600],
+                    data: [12, 19, 3, 5, 2, 3],
                     borderColor: 'rgb(75, 192, 192)',
                     tension: 0.1
                 }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: 'white'
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            color: 'white'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            color: 'white'
-                        }
-                    }
-                }
             }
         });
     </script>
