@@ -272,3 +272,109 @@ class RiskManager:
             risk_reward_ratio=2.0,
             confidence_threshold=self.min_confidence
         )
+
+class AdvancedRiskManager:
+    def __init__(self, 
+                 initial_capital: float = 1000, 
+                 max_risk_percentage: float = 0.02,
+                 daily_profit_target: float = 0.15):
+        """
+        Advanced Risk Management System
+        
+        Args:
+            initial_capital (float): Starting trading capital
+            max_risk_percentage (float): Maximum risk per trade (default 2%)
+            daily_profit_target (float): Daily profit goal (default 15%)
+        """
+        self.initial_capital = initial_capital
+        self.current_capital = initial_capital
+        self.max_risk_percentage = max_risk_percentage
+        self.daily_profit_target = daily_profit_target
+        
+        # Risk tracking metrics
+        self.total_trades = 0
+        self.profitable_trades = 0
+        self.total_profit = 0
+        self.max_drawdown = 0
+        
+        # Advanced risk parameters
+        self.risk_levels = {
+            'conservative': 0.01,   # 1% risk
+            'balanced': 0.02,       # 2% risk
+            'aggressive': 0.05      # 5% risk
+        }
+    
+    def calculate_position_size(self, entry_price: float, stop_loss: float) -> float:
+        """
+        Calculate optimal position size based on risk tolerance
+        
+        Args:
+            entry_price (float): Price at which trade is entered
+            stop_loss (float): Stop loss price
+        
+        Returns:
+            float: Recommended position size
+        """
+        risk_amount = self.current_capital * self.max_risk_percentage
+        price_difference = abs(entry_price - stop_loss)
+        
+        if price_difference == 0:
+            return 0
+        
+        position_size = risk_amount / price_difference
+        return min(position_size, self.current_capital * 0.1)  # Cap at 10% of capital
+    
+    def update_trade_metrics(self, trade_profit: float):
+        """
+        Update trading metrics after each trade
+        
+        Args:
+            trade_profit (float): Profit/loss from the trade
+        """
+        self.total_trades += 1
+        self.total_profit += trade_profit
+        
+        if trade_profit > 0:
+            self.profitable_trades += 1
+        
+        # Track max drawdown
+        self.current_capital += trade_profit
+        self.max_drawdown = min(self.max_drawdown, self.current_capital - self.initial_capital)
+    
+    def should_continue_trading(self) -> bool:
+        """
+        Determine if trading should continue based on daily profit target
+        
+        Returns:
+            bool: Whether to continue trading
+        """
+        profit_percentage = (self.total_profit / self.initial_capital) * 100
+        return profit_percentage < (self.daily_profit_target * 100)
+    
+    def get_risk_metrics(self) -> dict:
+        """
+        Generate comprehensive risk metrics
+        
+        Returns:
+            dict: Detailed risk and performance metrics
+        """
+        return {
+            'total_trades': self.total_trades,
+            'profitable_trades': self.profitable_trades,
+            'win_rate': self.profitable_trades / self.total_trades if self.total_trades > 0 else 0,
+            'total_profit': self.total_profit,
+            'current_capital': self.current_capital,
+            'max_drawdown': self.max_drawdown,
+            'profit_percentage': (self.total_profit / self.initial_capital) * 100
+        }
+    
+    def kill_switch(self):
+        """
+        Emergency stop mechanism to halt all trading
+        """
+        self.max_risk_percentage = 0
+        self.daily_profit_target = 0
+        return {
+            'status': 'TRADING_HALTED',
+            'message': 'Emergency kill switch activated. All trading suspended.'
+        }
