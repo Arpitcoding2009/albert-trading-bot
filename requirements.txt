@@ -1,7 +1,8 @@
-# Core Python Libraries
-numpy==1.24.3
-pandas==1.5.3
-typing-extensions
+# Core AI Intelligence
+openai==0.27.6
+transformers==4.29.2
+scikit-learn==1.2.2
+nltk==3.8.1
 
 # Core Web Framework
 fastapi==0.95.1
@@ -13,13 +14,12 @@ jinja2==3.1.2
 
 # Trading and Financial Libraries
 ccxt==3.0.52
-scikit-learn==1.2.2
+pandas==1.5.3
+numpy==1.24.3
 tensorflow==2.12.0
 torch==2.0.1
 
 # Machine Learning and NLP
-transformers==4.29.2
-nltk==3.8.1
 gensim==4.3.1
 optuna==3.0.6
 keras==2.12.0
@@ -61,5 +61,5 @@ alpaca-trade-api==2.3.0
 
 # Visualization
 matplotlib==3.7.1
-plotly==5.14.1
 seaborn==0.12.2
+plotly==5.14.1
