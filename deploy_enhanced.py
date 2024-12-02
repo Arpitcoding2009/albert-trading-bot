@@ -10,7 +10,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 import psutil
 import platform
 
@@ -26,10 +26,13 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestRegressor
 
+# Enhanced Error Handling and Configuration
+from fastapi.exceptions import RequestValidationError
+
 # Ensure compatibility with Render's environment
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# Enhanced Logging Configuration
+# Configure comprehensive logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -148,25 +151,96 @@ class AdvancedDeploymentManager:
 
 def create_app():
     """Create and configure FastAPI application with enhanced features"""
-    app = FastAPI(title="Albert Advanced Trading Bot")
-    
-    # CORS Middleware
+    app = FastAPI(
+        title="Albert AI Trading Bot",
+        description="Advanced Cryptocurrency Trading Platform",
+        version="1.0.0"
+    )
+
+    # Comprehensive Error Handlers
+    @app.exception_handler(Exception)
+    async def global_exception_handler(request, exc):
+        """
+        Global exception handler to catch and log all unhandled exceptions
+        """
+        logger.error(f"Unhandled exception: {exc}")
+        logger.error(traceback.format_exc())
+        return JSONResponse(
+            status_code=500,
+            content={
+                "status": "error",
+                "message": "An unexpected error occurred",
+                "details": str(exc)
+            }
+        )
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(request, exc):
+        """
+        Handle request validation errors with detailed feedback
+        """
+        logger.warning(f"Validation error: {exc}")
+        return JSONResponse(
+            status_code=422,
+            content={
+                "status": "validation_error",
+                "errors": exc.errors()
+            }
+        )
+
+    # CORS and Security Middleware
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=["*"],  # Adjust in production
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    
-    # Static files and templates
+
+    # Health Check Endpoint
+    @app.get("/health", status_code=200)
+    async def health_check():
+        """
+        Comprehensive health check endpoint
+        """
+        system_info = {
+            "status": "healthy",
+            "python_version": platform.python_version(),
+            "system": platform.system(),
+            "cpu_usage": psutil.cpu_percent(),
+            "memory_usage": psutil.virtual_memory().percent,
+            "trading_status": "ACTIVE"
+        }
+        return system_info
+
+    # Mount Static Files
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    templates_dir = os.path.join(base_dir, 'templates')
     static_dir = os.path.join(base_dir, 'static')
-    
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+    # WebSocket Endpoint for Real-time Updates
+    @app.websocket("/ws/trading-updates")
+    async def websocket_trading_updates(websocket: WebSocket):
+        await websocket.accept()
+        try:
+            while True:
+                # Placeholder for real-time trading updates
+                trading_data = {
+                    "current_price": 0,  # Fetch real-time price
+                    "portfolio_value": 0,  # Calculate current portfolio value
+                    "open_trades": []  # List of active trades
+                }
+                await websocket.send_json(trading_data)
+                await asyncio.sleep(5)  # Update every 5 seconds
+        except WebSocketDisconnect:
+            logger.info("WebSocket client disconnected")
+        except Exception as e:
+            logger.error(f"WebSocket error: {e}")
+
+    # Static files and templates
+    templates_dir = os.path.join(base_dir, 'templates')
     templates = Jinja2Templates(directory=templates_dir)
-    
+
     deployment_manager = AdvancedDeploymentManager()
     
     @app.on_event("startup")
@@ -226,4 +300,10 @@ app = create_app()
 # Main entry point for Render
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", 10000)))
+    uvicorn.run(
+        app, 
+        host="0.0.0.0", 
+        port=int(os.getenv("PORT", 10000)),
+        log_level="info",
+        workers=4  # Match Render's recommended worker configuration
+    )
