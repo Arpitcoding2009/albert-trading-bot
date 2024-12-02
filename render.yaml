@@ -27,8 +27,9 @@ services:
   buildCommand: |
     python -m pip install --upgrade pip
     pip install -r requirements.txt
+    pip install gunicorn
   startCommand: |
-    gunicorn --workers 4 --worker-class uvicorn.workers.UvicornWorker --timeout 180 --bind 0.0.0.0:$PORT deploy_enhanced:app
+    gunicorn --workers 4 --worker-class uvicorn.workers.UvicornWorker --timeout 240 --bind 0.0.0.0:$PORT deploy_enhanced:app
   envVars:
     - key: PORT
       value: 10000
@@ -95,6 +96,10 @@ services:
     # Render Specific
     - key: RENDER
       value: true
+    - key: PYTHONUNBUFFERED
+      value: "1"
+    - key: PYTHONDONTWRITEBYTECODE
+      value: "1"
     
   plan: starter
   autoDeploy: true
@@ -102,7 +107,7 @@ services:
   disk:
     name: logs
     mountPath: /logs
-    sizeGB: 1
+    sizeGB: 10
 
 databases:
 - name: albert-trading-bot-redis

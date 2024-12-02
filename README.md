@@ -13,67 +13,97 @@ Albert is an advanced AI-powered cryptocurrency trading bot designed to autonomo
 ## 🛠 Technology Stack
 - **Backend**: Python, FastAPI
 - **AI/ML**: Scikit-learn, TensorFlow
-- **Trading**: CCXT
+- **Trading**: CCXT (CoinDCX)
 - **Frontend**: Tailwind CSS, Chart.js
+- **Deployment**: Render, Gunicorn, Uvicorn
 
-## 🚀 Deployment
+## 🚀 Deployment Guide
 
-### Prerequisites
-- Python 3.8+
-- Binance/CoinDCX API Credentials
+### 1. Prerequisites
+- Python 3.9+
+- CoinDCX API Credentials
+- Render Account
 
-### Local Setup
-1. Clone the repository
+### 2. Local Development Setup
+
+#### Clone Repository
 ```bash
 git clone https://github.com/yourusername/albert-trading-bot.git
 cd albert-trading-bot
 ```
 
-2. Create virtual environment
+#### Create Virtual Environment
 ```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Unix
+venv\Scripts\activate     # Windows
 ```
 
-3. Install dependencies
+#### Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Set Environment Variables
-Create a `.env` file with:
-```
-BINANCE_API_KEY=your_api_key
-BINANCE_SECRET_KEY=your_secret_key
-```
-
-5. Run the Bot
+#### Configure Environment
+1. Copy `.env.example` to `.env`
+2. Fill in CoinDCX API credentials
 ```bash
-python deploy_enhanced.py
+cp .env.example .env
 ```
 
-### Render Deployment
-1. Fork the repository
-2. Connect Render to your GitHub
-3. Create a Web Service
+#### Run Locally
+```bash
+uvicorn deploy_enhanced:app --reload
+```
+
+### 3. Render Deployment
+
+#### Deployment Checklist
+- GitHub Repository
+- Render Account
+- CoinDCX API Credentials
+
+#### Deployment Steps
+1. Push code to GitHub
+2. Create New Web Service in Render
+   - Connect to GitHub Repository
+   - Select `main` branch
    - Build Command: `pip install -r requirements.txt`
-   - Start Command: `python deploy_enhanced.py`
+   - Start Command: `gunicorn --workers 4 --worker-class uvicorn.workers.UvicornWorker deploy_enhanced:app`
 
-## 🔐 Security
-- SSL/TLS Encryption
-- API Key Protection
-- Two-Factor Authentication
+#### Environment Variables in Render
+Set these in Render Dashboard:
+- `COINDCX_API_KEY`
+- `COINDCX_SECRET_KEY`
+- `PORT=10000`
+- `PYTHONUNBUFFERED=1`
 
-## 📊 Performance
+### 4. Troubleshooting Deployment
+- Check Render Logs
+- Verify API Credentials
+- Ensure all dependencies installed
+- Confirm Python runtime compatibility
+
+## 🔐 Security Best Practices
+- Never commit API keys to repository
+- Use environment variables
+- Implement rate limiting
+- Regular API key rotation
+
+## 📊 Performance Metrics
 - Targeted Daily Profit: 15%
 - AI-Enhanced Trading Strategies
 - Continuous Learning Mechanism
 
+## 🚨 Disclaimer
+Cryptocurrency trading involves significant financial risk. Use this bot responsibly and monitor performance continuously.
+
 ## 🤝 Contributing
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+1. Fork Repository
+2. Create Feature Branch
+3. Commit Changes
+4. Push to Branch
+5. Open Pull Request
 
 ## 📜 License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🚨 Disclaimer
-Cryptocurrency trading involves significant risk. Use this bot at your own risk and always monitor its performance.
+MIT License - See [LICENSE](LICENSE) for details

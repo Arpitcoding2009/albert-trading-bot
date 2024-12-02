@@ -5,10 +5,10 @@ typing-extensions
 
 # Web Framework
 fastapi
-uvicorn
-gunicorn
+uvicorn==0.22.0
+gunicorn==20.1.0
 python-jose
-python-dotenv
+python-dotenv==1.0.0
 websockets
 
 # Trading and Exchange
