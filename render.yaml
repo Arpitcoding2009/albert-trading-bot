@@ -1,8 +1,8 @@
 services:
 - type: web
-  name: albert-trading-platform
+  name: albert-quantum-trading-platform
   env: python
-  region: us-west
+  region: oregon
   branch: main
   runtime: python3.9.7
   
@@ -25,10 +25,9 @@ services:
           - '*.log'
   
   buildCommand: |
-    python -m pip install --upgrade pip
     pip install -r requirements.txt
   startCommand: |
-    uvicorn app:AlbertTradingPlatform.app --host 0.0.0.0 --port $PORT --workers 4 --log-level info
+    python deploy.py
   envVars:
     - key: PORT
       value: 10000
@@ -103,12 +102,16 @@ services:
       value: "4"
     - key: TIMEOUT
       value: "120"
+    - key: SUPPORTED_EXCHANGES
+      value: binance,coinbase,kraken
+    - key: TRADING_PAIRS
+      value: BTC/USDT,ETH/USDT,XRP/USDT
     
   plan: starter
   autoDeploy: true
   healthCheckPath: /health
   disk:
-    name: logs
+    name: quantum-trading-logs
     mountPath: /logs
     sizeGB: 10
 
