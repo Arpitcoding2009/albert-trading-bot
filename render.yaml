@@ -1,9 +1,9 @@
 services:
 - type: web
   name: albert-quantum-trading-platform
-  env: python3.9
+  env: python3.10
   region: us-west-2
-  runtime: python3.9.7
+  runtime: python3.10.11
   healthCheckPath: /quantum-health
   buildTriggers:
     - paths:
@@ -33,7 +33,7 @@ services:
       value: 10000
     
     - key: PYTHON_VERSION
-      value: 3.9.7
+      value: 3.10.11
     
     # Cryptocurrency Exchange API Credentials (IMPORTANT: Set these in Render Dashboard)
     - key: COINDCX_API_KEY
