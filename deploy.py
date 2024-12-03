@@ -167,10 +167,81 @@ class AlbertQuantumDeploymentManager:
         
         return self.app
 
+class AlbertQuantumTrader:
+    def __init__(self, config: Dict = None):
+        from src.quantum_trading.quantum_brain import QuantumBrain
+        from src.quantum_trading.trade_executor import QuantumTradeExecutor
+        self.quantum_brain = QuantumBrain(n_qubits=6)
+        self.trade_executor = QuantumTradeExecutor(
+            exchange_id='coindcx',
+            config=config
+        )
+        self.active = False
+
+    async def start(self):
+        """Start Albert's quantum trading operations"""
+        self.active = True
+        
+        while self.active:
+            try:
+                # Get market data
+                market_data = await self._fetch_market_data()
+                
+                # Quantum analysis
+                analysis = self.quantum_brain.analyze_market(market_data)
+                
+                # Execute trade if signal is strong
+                if abs(analysis['trade_signal']) > 0.7:
+                    trade_signal = {
+                        'symbol': market_data['symbol'],
+                        'side': 'buy' if analysis['trade_signal'] > 0 else 'sell',
+                        'confidence': analysis['confidence']
+                    }
+                    
+                    # Execute trade with quantum timing
+                    result = await self.trade_executor.execute_trade(trade_signal)
+                    
+                    # Adapt quantum brain based on results
+                    self.quantum_brain.adapt({
+                        'features': market_data,
+                        'predicted_return': analysis['trade_signal'],
+                        'actual_return': result.get('profit', 0)
+                    })
+                
+                # Dynamic sleep based on market conditions
+                sleep_time = self._calculate_dynamic_interval(analysis)
+                await asyncio.sleep(sleep_time)
+                
+            except Exception as e:
+                logging.error(f"Trading error: {str(e)}")
+                await asyncio.sleep(5)  # Error cooldown
+
+    async def stop(self):
+        """Stop trading operations"""
+        self.active = False
+
+    async def _fetch_market_data(self) -> Dict:
+        """Fetch comprehensive market data"""
+        # Implementation details...
+        pass
+
+    def _calculate_dynamic_interval(self, analysis: Dict) -> float:
+        """Calculate dynamic sleep interval based on market conditions"""
+        base_interval = 1.0  # Base interval in seconds
+        volatility_factor = analysis.get('volatility', 0.5)
+        confidence_factor = analysis.get('confidence', 0.5)
+        
+        # Adjust interval based on market conditions
+        interval = base_interval * (1 + volatility_factor) / (1 + confidence_factor)
+        
+        return min(max(interval, 0.1), 5.0)  # Keep between 0.1 and 5 seconds
+
 def main():
     """Main deployment entry point for Render."""
     deployment_manager = AlbertQuantumDeploymentManager()
     app = deployment_manager.deploy()
+    trader = AlbertQuantumTrader()
+    asyncio.run(trader.start())
     return app
 
 # Render-specific application creation
