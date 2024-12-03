@@ -1,10 +1,11 @@
 services:
 - type: web
-  name: albert-quantum-trading-platform
-  env: python3.10
-  region: us-west-2
+  name: albert-quantum-platform
+  env: python
+  region: oregon
+  branch: main
   runtime: python3.10.11
-  healthCheckPath: /quantum-health
+  healthCheckPath: /health
   buildTriggers:
     - paths:
         included:
@@ -24,14 +25,10 @@ services:
   buildCommand: |
     pip install -r requirements.txt
   startCommand: |
-    gunicorn -w 4 -k uvicorn.workers.UvicornWorker app:app
-  plan: pro
-  branch: main
+    gunicorn app:app --workers 4 --worker-class uvicorn.workers.UvicornWorker
+  plan: starter
   autoDeploy: true
   envVars:
-    - key: PORT
-      value: 10000
-    
     - key: PYTHON_VERSION
       value: 3.10.11
     
@@ -169,6 +166,177 @@ services:
       frequency: daily
     - type: webhook
       url: https://your-monitoring-service.com/alerts
+
+- type: background-worker
+  name: albert-quantum-background-worker
+  env: python
+  region: oregon
+  branch: main
+  runtime: python3.10.11
+  buildTriggers:
+    - paths:
+        included:
+          - deploy.py
+          - requirements.txt
+          - src/trading/**
+          - config/**
+          - static/js/trading.js
+          - .env.example
+          - runtime.txt
+        ignored:
+          - docs/**
+          - tests/**
+          - '*.md'
+          - .git/**
+          - '*.log'
+  buildCommand: |
+    pip install -r requirements.txt
+  startCommand: |
+    python background_worker.py
+  plan: starter
+  autoDeploy: true
+  envVars:
+    - key: PYTHON_VERSION
+      value: 3.10.11
+    
+    # Cryptocurrency Exchange API Credentials (IMPORTANT: Set these in Render Dashboard)
+    - key: COINDCX_API_KEY
+      sync: false
+    - key: COINDCX_SECRET_KEY
+      sync: false
+    
+    # Security Settings
+    - key: SECRET_KEY
+      generateValue: true
+    - key: DEBUG
+      value: false
+    - key: ENCRYPTION_SALT
+      generateValue: true
+    
+    # Quantum Intelligence Configuration
+    - key: QUANTUM_INTELLIGENCE_LEVEL
+      value: 10000
+    - key: MAX_INTELLIGENCE_SCALING
+      value: unlimited
+    
+    # Multi-Language Support
+    - key: SUPPORTED_LANGUAGES
+      value: python,rust,cpp,javascript,go
+    
+    # Hardware Adaptation
+    - key: DYNAMIC_RESOURCE_ALLOCATION
+      value: true
+    - key: HARDWARE_OPTIMIZATION_MODE
+      value: quantum-adaptive
+    
+    # Exchange Configuration
+    - key: SUPPORTED_EXCHANGES
+      value: binance,coinbase,kraken,bybit,okx,kucoin,huobi
+    - key: TRADING_PAIRS
+      value: BTC/USDT,ETH/USDT,XRP/USDT,ADA/USDT,DOT/USDT
+    
+    # Risk Management
+    - key: MAX_TRADE_AMOUNT
+      value: 100000
+    - key: RISK_TOLERANCE
+      value: 0.01
+    
+    # Advanced AI Configuration
+    - key: AI_MODEL_VERSION
+      value: 10.0
+    - key: MACHINE_LEARNING_COMPLEXITY
+      value: quantum-adaptive
+    
+    # Quantum Computing Integration
+    - key: QUANTUM_COMPUTING_ENABLED
+      value: true
+    - key: QUANTUM_BACKEND
+      value: qiskit
+    
+    # Performance Scaling
+    - key: MAX_CONCURRENT_TRADES
+      value: 500
+    - key: TRADING_FREQUENCY
+      value: high
+    
+    # Logging and Monitoring
+    - key: SENTRY_DSN
+      value: https://your-sentry-dsn.ingest.sentry.io/your-project-id
+    - key: LOG_LEVEL
+      value: DEBUG
+    
+    # Security Configuration
+    - key: SECURITY_LEVEL
+      value: quantum
+    - key: MFA_REQUIRED
+      value: true
+    
+    # Performance Optimization
+    - key: CACHE_BACKEND
+      value: redis
+    - key: USE_CPP_MODULES
+      value: true
+    - key: ENABLE_GPU_ACCELERATION
+      value: false
+    
+    # Monitoring Alerts
+    - key: TELEGRAM_ALERT_BOT_TOKEN
+      sync: false
+    - key: TELEGRAM_CHAT_ID
+      sync: false
+    
+    # Render Specific
+    - key: RENDER
+      value: true
+    - key: PYTHONUNBUFFERED
+      value: "1"
+    - key: PYTHONDONTWRITEBYTECODE
+      value: "1"
+    - key: WEB_CONCURRENCY
+      value: "4"
+    - key: TIMEOUT
+      value: "120"
+    - key: ALBERT_QUANTUM_SECRET_KEY
+      generateValue: true
+    
+  disk:
+    - name: albert-data-storage
+      mountPath: /opt/albert_data
+      sizeGB: 50
+    - name: quantum-trading-logs
+      mountPath: /logs
+      sizeGB: 50
+    - name: quantum-model-storage
+      mountPath: /models
+      sizeGB: 100
+    - name: model-storage
+      mountPath: /opt/models
+      sizeGB: 100
+    - name: log-storage
+      mountPath: /opt/logs
+      sizeGB: 200
+    - name: trading-data
+      mountPath: /opt/trading-data
+      sizeGB: 200
+    - name: quantum-intelligence-cache
+      mountPath: /opt/quantum-cache
+      sizeGB: 50
+  scaling:
+    minInstances: 2
+    maxInstances: 10
+    targetCPUPercent: 75
+    targetMemoryPercent: 80
+  alerts:
+    - type: email
+      frequency: daily
+    - type: webhook
+      url: https://your-monitoring-service.com/alerts
+
+- type: database
+  name: albert-quantum-database
+  region: oregon
+  ipAllowList: []  # Restrict database access
+  plan: starter
 
 databases:
 - name: albert-quantum-db

@@ -1,31 +1,47 @@
 import os
 import sys
 import logging
-import asyncio
+from logging.handlers import RotatingFileHandler
 import traceback
-from typing import Dict, Any
-
-# Core Web Framework
+import asyncio
 import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse, HTMLResponse
+from typing import Dict, Any
 
-# Project Modules
+# Core Web Framework
 from src.core.risk_manager import AdvancedRiskManager
 from src.sentiment_analyzer import MarketSentimentAnalyzer
 
-# Logging Configuration
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s: %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler('trading_bot.log')
-    ]
-)
-logger = logging.getLogger(__name__)
+# Configure comprehensive logging
+def setup_logging():
+    log_dir = os.path.join(os.getcwd(), 'logs')
+    os.makedirs(log_dir, exist_ok=True)
+    
+    log_file = os.path.join(log_dir, 'albert_quantum_platform.log')
+    
+    # Configure root logger
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.StreamHandler(sys.stdout),  # Console output
+            RotatingFileHandler(
+                log_file, 
+                maxBytes=10*1024*1024,  # 10 MB
+                backupCount=5
+            )
+        ]
+    )
+
+    # Create a logger for the application
+    logger = logging.getLogger('AlbertQuantumPlatform')
+    return logger
+
+# Global logger
+logger = setup_logging()
 
 class AlbertTradingPlatform:
     def __init__(self):
@@ -120,6 +136,19 @@ class AlbertTradingPlatform:
             log_level="info",
             workers=4
         )
+
+# Error handler for global exceptions
+def global_exception_handler(exc_type, exc_value, exc_traceback):
+    """
+    Global exception handler for unhandled exceptions
+    """
+    logger.critical(
+        "Uncaught exception",
+        exc_info=(exc_type, exc_value, exc_traceback)
+    )
+
+# Set global exception handler
+sys.excepthook = global_exception_handler
 
 # Main Execution
 if __name__ == "__main__":
