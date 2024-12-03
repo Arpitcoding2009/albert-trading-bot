@@ -2,9 +2,9 @@ services:
 - type: web
   name: albert-quantum-platform
   env: python
+  runtime: python3.10.11
   region: oregon
   branch: main
-  runtime: python3.10.11
   healthCheckPath: /health
   buildTriggers:
     - paths:
@@ -170,9 +170,9 @@ services:
 - type: background-worker
   name: albert-quantum-background-worker
   env: python
+  runtime: python3.10.11
   region: oregon
   branch: main
-  runtime: python3.10.11
   buildTriggers:
     - paths:
         included:
