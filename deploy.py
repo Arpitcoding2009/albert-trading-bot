@@ -105,12 +105,15 @@ class AlbertQuantumDeploymentManager:
 
     def _setup_quantum_logging(self):
         """Enhanced quantum logging for Render."""
+        import logging
+        import logging.handlers
+        
         logger = logging.getLogger("quantum_deployment")
+        logger.setLevel(logging.INFO)
         
         # Render-specific log configuration
         if os.environ.get('RENDER', 'false') == 'true':
             # Optional: Configure log rotation or external logging
-            import logging.handlers
             
             # Rotate log files every 10MB
             file_handler = logging.handlers.RotatingFileHandler(
@@ -118,7 +121,17 @@ class AlbertQuantumDeploymentManager:
                 maxBytes=10*1024*1024,  # 10MB
                 backupCount=3
             )
+            file_handler.setFormatter(logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            ))
             logger.addHandler(file_handler)
+        
+        # Console handler for local development and Render logs
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setFormatter(logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        ))
+        logger.addHandler(console_handler)
         
         return logger
 
