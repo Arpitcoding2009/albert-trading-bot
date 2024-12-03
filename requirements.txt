@@ -1,59 +1,74 @@
-# Core AI Intelligence
-openai==0.27.6
-transformers==4.29.2
-scikit-learn==1.2.2
-nltk==3.8.1
-torch==2.0.1
-tensorflow==2.12.0
-
-# Core Web Framework
-fastapi==0.95.1
-uvicorn==0.22.0
-gunicorn==20.1.0
-websockets==11.0.3
-jinja2==3.1.2
-
-# Trading and Financial Libraries
-ccxt==3.0.52
-pandas==1.5.3
-numpy==1.24.3
-
-# Machine Learning and NLP
-gensim==4.3.1
-optuna==3.0.6
-keras==2.12.0
-
-# Async and Concurrency
+# Core Python & Async
+python==3.9.7
 asyncio==3.4.3
-
-# Monitoring and Logging
-psutil==5.9.5
+multiprocessing==0.70.12.2
+typing-extensions==4.2.0
 python-dotenv==1.0.0
-sentry-sdk==1.22.2
 
-# Deployment and Environment
-python-multipart==0.0.6
-email-validator==2.0.0.post2
+# Advanced Machine Learning
+torch==2.0.1
+tensorflow==2.9.0
+transformers==4.30.2
+scikit-learn==1.2.2
+optuna==3.1.1
+mlflow==2.3.2
 
-# Optional: Telegram Bot Integration
-python-telegram-bot==20.3
+# Quantum Computing
+qiskit==0.41.0
+pennylane==0.30.0
+qutip==4.7.1
 
-# Development and Testing
+# Hardware & System Monitoring
+psutil==5.9.5
+GPUtil==1.4.0
+py-cpuinfo==9.9.0
+resource==0.2.1
+
+# Distributed & Parallel Computing
+dask==2022.5.0
+distributed==2022.5.0
+ray==1.12.0
+
+# Advanced Numerical & Scientific
+numpy==1.24.3
+scipy==1.8.0
+numba==0.55.1
+networkx==3.1
+
+# Security & Cryptography
+cryptography==37.0.2
+pyjwt==2.3.0
+
+# Logging & Monitoring
+python-json-logger==2.0.2
+sentry-sdk==1.5.10
+
+# Web & Networking
+websockets==10.2
+httpx==0.24.1
+aiohttp==3.8.4
+fastapi==0.95.2
+pydantic==1.10.7
+uvicorn==0.22.0
+
+# Trading & Financial
+ccxt==2.1.4
+pandas==2.0.1
+
+# Development & Testing
 pytest==7.3.1
 pytest-asyncio==0.21.0
-coverage==7.2.5
-setuptools==65.6.3
+black==22.3.0
+mypy==0.950
+flake8==4.0.1
 
-# Security and Cryptography
-cryptography==40.0.2
-pyjwt==2.7.0
-passlib==1.9.6
+# Deployment
+gunicorn==20.1.0
+gevent==21.12.0
+redis==4.5.4
 
-# Advanced Trading Features
-requests==2.28.2
-alpaca-trade-api==2.3.0
-
-# Visualization
-matplotlib==3.7.1
-seaborn==0.12.2
-plotly==5.14.1
+# Optional Advanced Features
+xgboost==1.6.1
+lightgbm==3.3.2
+catboost==1.0.6
+openai==0.27.7

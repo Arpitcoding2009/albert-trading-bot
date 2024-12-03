@@ -22,24 +22,27 @@ wheels/
 MANIFEST
 
 # Virtual Environment
-venv/
-env/
-.env
 .venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
 # IDE
-.vscode/
 .idea/
+.vscode/
 *.swp
 *.swo
 
 # Logs
 *.log
-logs/
 
 # Machine Learning
-*.h5
-*.pkl
+mlflow/
+quantum_logs/
+hardware_metrics/
+*.sqlite3
 
 # Security
 *.key
@@ -51,3 +54,12 @@ Thumbs.db
 
 # Render
 .render/
+
+# Additional exclusions
+.env
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+albert_data/
+quantum_trading_secrets/

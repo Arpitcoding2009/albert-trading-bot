@@ -1,1 +1,4 @@
-web: uvicorn app:AlbertTradingPlatform.app --host 0.0.0.0 --port $PORT --workers 4 --log-level info
+web: gunicorn -w 4 -k uvicorn.workers.UvicornWorker app:app
+worker: python -m src.core.background_tasks
+quantum_worker: python -m src.quantum.quantum_processing
+monitoring: python -m src.monitoring.system_monitor
