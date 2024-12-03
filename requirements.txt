@@ -1,5 +1,4 @@
 # Core Python & Async
-python==3.10.11
 asyncio>=3.4.3
 multiprocessing>=0.70.12.2
 typing-extensions>=4.2.0
