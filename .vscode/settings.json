@@ -1,0 +1,68 @@
+{
+    "performance_optimizer": {
+        "java": {
+            "heap_size": {
+                "min": "1G",
+                "max": "4G"
+            },
+            "garbage_collector": "G1GC",
+            "compiler_options": {
+                "optimization_level": "aggressive",
+                "inline_methods": true,
+                "enable_preview": true
+            }
+        },
+        "python": {
+            "multiprocessing": {
+                "enabled": true,
+                "max_workers": 4
+            },
+            "caching": {
+                "enabled": true,
+                "max_size": 1000
+            }
+        },
+        "trading": {
+            "batch_size": 100,
+            "buffer_size": 1000,
+            "parallel_execution": true,
+            "optimization_level": "high",
+            "market_data": {
+                "cache_size": "500MB",
+                "update_interval_ms": 100
+            }
+        },
+        "memory_management": {
+            "cache_policy": "LRU",
+            "max_memory_usage": "75%",
+            "cleanup_threshold": "85%"
+        },
+        "logging": {
+            "level": "INFO",
+            "performance_metrics": true,
+            "file_rotation": {
+                "max_size": "100MB",
+                "backup_count": 5
+            }
+        },
+        "network": {
+            "connection_pool_size": 50,
+            "timeout_ms": 5000,
+            "retry": {
+                "max_attempts": 3,
+                "backoff_ms": 1000
+            }
+        }
+    },
+    "python.analysis.extraPaths": [
+        "./src"
+    ],
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.compile.nullAnalysis.mode": "automatic",
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.pytestArgs": [
+        "tests"
+    ]
+}

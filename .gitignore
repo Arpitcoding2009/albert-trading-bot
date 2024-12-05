@@ -19,7 +19,36 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+*.logs
+*.ctxt
+.mtj.tmp/
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+replay_pid*
+
+# IDEs and editors
+.idea/
+.vscode/*
+!.vscode/settings.json
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+.metadata/
 
 # Virtual Environment
 .venv
@@ -28,42 +57,64 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+venv_albert/
 
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Logs
+# Logs and databases
 *.log
-
-# Machine Learning
+*.sqlite
+logs/
+*.db
 mlflow/
 quantum_logs/
 hardware_metrics/
 *.sqlite3
 
-# Security
-*.key
-*.pem
+# Build and package files
+target/
+.gradle/
+build/
+bin/
+out/
+dist/
 
-# OS
+# Large files and dependencies
+*.zip
+jdk*/
+gradle*/
+apache-maven*/
+*.egg
+
+# Environment variables
+.env
+.env.*;
+!.env.template
+.env.local
+
+# Cache and temporary files
+.cache/
+.temp/
+.tmp/
+tmp/
+temp/
+.pytest_cache/
+.mypy_cache/
+
+# Test coverage
+.coverage
+coverage/
+htmlcov/
+
+# Documentation
+docs/_build/
+site/
+
+# Operating System
 .DS_Store
 Thumbs.db
 
 # Render
 .render/
 
-# Environment variables
-.env
-.env.*;
-!.env.template
-
 # Additional exclusions
-.pytest_cache/
-.coverage
-htmlcov/
-.mypy_cache/
 albert_data/
 quantum_trading_secrets/
