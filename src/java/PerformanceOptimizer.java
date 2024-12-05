@@ -51,6 +51,8 @@ import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
+import com.albert.trading.bot.config.PerformanceConfig;
+
 /**
  * Advanced Performance Optimizer for Quantum Trading Intelligence
  * Provides high-performance statistical and technical analysis methods
@@ -1868,5 +1870,44 @@ public class PerformanceOptimizer {
             };
             return recommendations[new Random().nextInt(recommendations.length)];
         }
+    }
+
+    private static void initializePerformanceSettings() {
+        PerformanceConfig config = PerformanceConfig.getInstance();
+        
+        // Apply Java configurations
+        Map<String, Object> javaConfig = config.getJavaConfig();
+        if (javaConfig != null) {
+            Map<String, String> heapSize = (Map<String, String>) javaConfig.get("heap_size");
+            System.setProperty("java.heap.min", heapSize.get("min"));
+            System.setProperty("java.heap.max", heapSize.get("max"));
+            System.setProperty("java.gc", (String) javaConfig.get("garbage_collector"));
+        }
+
+        // Apply trading configurations
+        Map<String, Object> tradingConfig = config.getTradingConfig();
+        if (tradingConfig != null) {
+            BUFFER_SIZE = ((Integer) tradingConfig.get("buffer_size")).intValue();
+            MAX_DATA_POINTS_PER_SECOND = ((Integer) tradingConfig.get("batch_size")).intValue();
+        }
+
+        // Apply memory configurations
+        Map<String, Object> memoryConfig = config.getMemoryConfig();
+        if (memoryConfig != null) {
+            System.setProperty("memory.policy", (String) memoryConfig.get("cache_policy"));
+            System.setProperty("memory.max_usage", (String) memoryConfig.get("max_memory_usage"));
+        }
+
+        // Apply network configurations
+        Map<String, Object> networkConfig = config.getNetworkConfig();
+        if (networkConfig != null) {
+            MAX_CONCURRENT_TRADES = ((Integer) networkConfig.get("connection_pool_size")).intValue();
+        }
+
+        LOGGER.info("Performance settings initialized from configuration");
+    }
+
+    static {
+        initializePerformanceSettings();
     }
 }
