@@ -1,0 +1,16 @@
+# AWS Configuration
+region: us-east-1
+instance_type: t3.xlarge
+rds:
+  instance_class: db.t3.large
+  engine: postgresql
+  storage: 100
+sagemaker:
+  instance_type: ml.t3.xlarge
+monitoring:
+  cloudwatch_enabled: true
+  alerts_enabled: true
+security:
+  vpc_enabled: true
+  encryption_at_rest: true
+  ssl_enabled: true

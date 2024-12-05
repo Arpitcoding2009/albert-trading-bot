@@ -1,0 +1,279 @@
+/* Albert Trading Bot - Modern UI Styles */
+
+:root {
+    --primary-blue: #3b82f6;
+    --primary-dark: #1e293b;
+    --success-green: #10b981;
+    --danger-red: #ef4444;
+    --text-light: #f3f4f6;
+    --card-bg: #1f2937;
+}
+
+/* Base Styles */
+body {
+    font-family: 'Montserrat', sans-serif;
+    background: var(--primary-dark);
+    color: var(--text-light);
+}
+
+/* Navigation */
+.albert-logo {
+    position: relative;
+    animation: pulse 2s infinite;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--danger-red);
+}
+
+.status-dot.active {
+    background: var(--success-green);
+}
+
+.trading-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.trading-btn-start {
+    background: var(--success-green);
+    color: white;
+}
+
+.trading-btn-stop {
+    background: var(--danger-red);
+    color: white;
+}
+
+.profile-btn {
+    transition: transform 0.2s ease;
+}
+
+.profile-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Hero Section */
+.hero-section {
+    position: relative;
+    background: linear-gradient(to bottom, var(--primary-dark), var(--card-bg));
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('/static/img/grid.svg') center/cover;
+    opacity: 0.1;
+}
+
+/* Stats Cards */
+.stat-card {
+    background: var(--card-bg);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-blue);
+    margin: 0.5rem 0;
+}
+
+.stat-change {
+    font-size: 0.875rem;
+    color: var(--success-green);
+}
+
+.stat-change.negative {
+    color: var(--danger-red);
+}
+
+/* Chart Cards */
+.chart-card {
+    background: var(--card-bg);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.chart-container {
+    height: 300px;
+    position: relative;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+th {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    font-weight: 600;
+    text-align: left;
+}
+
+td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+}
+
+.modal-content {
+    background: var(--card-bg);
+    border-radius: 1rem;
+    width: 100%;
+    max-width: 32rem;
+    animation: slideIn 0.3s ease-out;
+}
+
+.modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    padding: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Settings */
+.settings-grid {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.setting-item label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.setting-item select,
+.setting-item input {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-light);
+}
+
+.strategy-toggles {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+/* Animations */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(1rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --primary-dark: #0f172a;
+        --card-bg: #1e293b;
+    }
+}

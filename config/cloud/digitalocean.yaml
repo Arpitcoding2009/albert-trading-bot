@@ -1,0 +1,20 @@
+# DigitalOcean Configuration
+region: nyc3
+droplet_size: s-4vcpu-8gb
+database:
+  size: db-s-4vcpu-8gb
+  engine: postgresql
+  storage: 100
+monitoring:
+  monitoring_enabled: true
+  alerts_enabled: true
+security:
+  vpc_enabled: true
+  encryption_at_rest: true
+  ssl_enabled: true
+kubernetes:
+  enabled: true
+  node_pool:
+    size: s-4vcpu-8gb
+    count: 3
+    auto_scale: true

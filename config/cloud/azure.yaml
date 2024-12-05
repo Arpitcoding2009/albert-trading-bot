@@ -1,0 +1,16 @@
+# Microsoft Azure Configuration
+region: eastus
+vm_size: Standard_D4s_v3
+database:
+  tier: GP_Gen5_4
+  engine: postgresql
+  storage: 100
+ml_workspace:
+  sku: STANDARD_D4S_V3
+monitoring:
+  azure_monitor_enabled: true
+  alerts_enabled: true
+security:
+  vnet_enabled: true
+  encryption_at_rest: true
+  ssl_enabled: true

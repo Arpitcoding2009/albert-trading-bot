@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Albert Trading Bot</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold mb-8 text-center">Albert AI Trading Bot</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Trading Signals Panel -->
+            <div class="bg-gray-800 rounded-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4">Live Trading Signals</h2>
+                <div id="tradingSignals" class="space-y-4">
+                    <div class="flex justify-between">
+                        <span>Current Price:</span>
+                        <span id="currentPrice" class="font-bold">Loading...</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Moving Average:</span>
+                        <span id="movingAverage" class="font-bold">Loading...</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>RSI:</span>
+                        <span id="rsi" class="font-bold">Loading...</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Recommendation:</span>
+                        <span id="recommendation" class="font-bold">Loading...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Portfolio Panel -->
+            <div class="bg-gray-800 rounded-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4">Portfolio</h2>
+                <div id="portfolioData" class="space-y-4">
+                    <!-- Portfolio data will be dynamically populated -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Trading Chart -->
+        <div class="mt-8 bg-gray-800 rounded-lg p-6">
+            <h2 class="text-2xl font-semibold mb-4">Trading Chart</h2>
+            <canvas id="tradingChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const socket = new WebSocket('ws://localhost:8000/ws/trading-signals');
+        const chart = new Chart(document.getElementById('tradingChart'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Price',
+                    data: [],
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            
+            // Update trading signals
+            document.getElementById('currentPrice').textContent = data.price.toFixed(2);
+            document.getElementById('movingAverage').textContent = data.moving_average ? data.moving_average[0].toFixed(2) : 'N/A';
+            document.getElementById('rsi').textContent = data.rsi ? data.rsi.toFixed(2) : 'N/A';
+            document.getElementById('recommendation').textContent = data.recommendation;
+
+            // Update chart
+            const now = new Date().toLocaleTimeString();
+            chart.data.labels.push(now);
+            chart.data.datasets[0].data.push(data.price);
+
+            // Keep only last 10 data points
+            if (chart.data.labels.length > 10) {
+                chart.data.labels.shift();
+                chart.data.datasets[0].data.shift();
+            }
+
+            chart.update();
+        };
+
+        // Fetch portfolio data
+        fetch('/api/portfolio')
+            .then(response => response.json())
+            .then(data => {
+                const portfolioContainer = document.getElementById('portfolioData');
+                Object.entries(data.portfolio.total).forEach(([currency, balance]) => {
+                    const balanceElement = document.createElement('div');
+                    balanceElement.classList.add('flex', 'justify-between');
+                    balanceElement.innerHTML = `
+                        <span>${currency}:</span>
+                        <span class="font-bold">${balance.toFixed(4)}</span>
+                    `;
+                    portfolioContainer.appendChild(balanceElement);
+                });
+            });
+    </script>
+</body>
+</html>

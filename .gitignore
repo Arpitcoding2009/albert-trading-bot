@@ -1,0 +1,69 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Machine Learning
+mlflow/
+quantum_logs/
+hardware_metrics/
+*.sqlite3
+
+# Security
+*.key
+*.pem
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Render
+.render/
+
+# Environment variables
+.env
+.env.*;
+!.env.template
+
+# Additional exclusions
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+albert_data/
+quantum_trading_secrets/
