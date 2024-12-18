@@ -3,7 +3,12 @@ package com.albert.trading.bot.model;
 import java.time.Instant;
 import java.util.UUID;
 
+import com.albert.trading.bot.model.TradingSignal;
+
 public class TradeSignal {
+    public static TradingSignal BUY;
+    public static TradeSignal SELL;
+    public static TradeSignal HOLD;
     private final String id;
     private final String ticker;
     private final TradingSignal signal;

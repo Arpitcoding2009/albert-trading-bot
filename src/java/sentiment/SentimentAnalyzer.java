@@ -5,86 +5,80 @@ import org.deeplearning4j.text.sentenceiterator.SentenceIterator;
 import org.deeplearning4j.text.tokenization.tokenizer.preprocessor.CommonPreprocessor;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
+import com.google.gson.JsonObject;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 import java.time.Instant;
+import java.util.stream.Collectors;
 
 public class SentimentAnalyzer {
     private static final Logger LOGGER = Logger.getLogger(SentimentAnalyzer.class.getName());
-    
-    private final NeuralPredictor neuralPredictor;
-    private final Map<String, NewsSource> newsSources;
-    private final Map<String, SocialMediaSource> socialSources;
     private final ExecutorService analysisExecutor;
-    private final Map<String, Double> sentimentCache;
+    private final Map<String, NewsSource> newsSources = new ConcurrentHashMap<>();
+    private final Map<String, SocialMediaSource> socialSources = new ConcurrentHashMap<>();
+    private final NeuralPredictor neuralPredictor;
     private final TokenizerFactory tokenizerFactory;
+    private final Cache<String, Double> sentimentCache;
+    private final HttpClient httpClient;
     
-    private static final int CACHE_SIZE = 10000;
     private static final long CACHE_EXPIRY = 300000; // 5 minutes
-    private static final double SOCIAL_WEIGHT = 0.4;
-    private static final double NEWS_WEIGHT = 0.6;
+    private static final int MAX_THREADS = 50;
+    private static final String TWITTER_API_KEY = System.getenv("TWITTER_API_KEY");
+    private static final String REDDIT_API_KEY = System.getenv("REDDIT_API_KEY");
+    private static final String NEWS_API_KEY = System.getenv("NEWS_API_KEY");
+    private static final String ALPHA_VANTAGE_KEY = System.getenv("ALPHA_VANTAGE_KEY");
     
     public SentimentAnalyzer() {
+        this.analysisExecutor = Executors.newFixedThreadPool(MAX_THREADS);
         this.neuralPredictor = new NeuralPredictor();
-        this.newsSources = new ConcurrentHashMap<>();
-        this.socialSources = new ConcurrentHashMap<>();
-        this.analysisExecutor = Executors.newWorkStealingPool();
-        this.sentimentCache = new ConcurrentHashMap<>();
         this.tokenizerFactory = new DefaultTokenizerFactory();
-        tokenizerFactory.setTokenPreProcessor(new CommonPreprocessor());
-        
+        this.tokenizerFactory.setTokenPreProcessor(new CommonPreprocessor());
+        this.httpClient = HttpClients.createDefault();
         initializeSources();
-        startCacheCleanup();
+        initializeCache();
     }
-    
+
     private void initializeSources() {
-        // Initialize news sources
-        newsSources.put("reuters", new NewsSource("reuters", "API_KEY"));
-        newsSources.put("bloomberg", new NewsSource("bloomberg", "API_KEY"));
-        newsSources.put("cryptonews", new NewsSource("cryptonews", "API_KEY"));
+        // Major Financial News
+        newsSources.put("reuters", new NewsSource("reuters", NEWS_API_KEY));
+        newsSources.put("bloomberg", new NewsSource("bloomberg", NEWS_API_KEY));
+        newsSources.put("wsj", new NewsSource("wsj", NEWS_API_KEY));
+        newsSources.put("ft", new NewsSource("ft", NEWS_API_KEY));
+        newsSources.put("seekingalpha", new NewsSource("seekingalpha", NEWS_API_KEY));
         
-        // Initialize social media sources
-        socialSources.put("twitter", new TwitterSource("API_KEY"));
-        socialSources.put("reddit", new RedditSource("API_KEY"));
-        socialSources.put("telegram", new TelegramSource("API_KEY"));
+        // Crypto Specific News
+        newsSources.put("coindesk", new NewsSource("coindesk", NEWS_API_KEY));
+        newsSources.put("cointelegraph", new NewsSource("cointelegraph", NEWS_API_KEY));
+        newsSources.put("cryptonews", new NewsSource("cryptonews", NEWS_API_KEY));
         
-        LOGGER.info("Initialized " + newsSources.size() + " news sources and " +
+        // Social Media
+        socialSources.put("twitter", new TwitterSource(TWITTER_API_KEY));
+        socialSources.put("reddit", new RedditSource(REDDIT_API_KEY));
+        socialSources.put("telegram", new TelegramSource());
+        socialSources.put("discord", new DiscordSource());
+        socialSources.put("stocktwits", new StocktwitsSource());
+        
+        LOGGER.info("Initialized " + newsSources.size() + " news sources and " + 
                    socialSources.size() + " social media sources");
     }
-    
-    public CompletableFuture<SentimentResult> analyzeSentiment(String ticker) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Double cachedSentiment = sentimentCache.get(ticker);
-                if (cachedSentiment != null) {
-                    return new SentimentResult(ticker, cachedSentiment, true);
-                }
-                
-                CompletableFuture<Double> newsSentiment = analyzeNewsSentiment(ticker);
-                CompletableFuture<Double> socialSentiment = analyzeSocialSentiment(ticker);
-                
-                CompletableFuture<Double> combinedSentiment = newsSentiment
-                    .thenCombine(socialSentiment, (news, social) -> 
-                        (news * NEWS_WEIGHT + social * SOCIAL_WEIGHT));
-                
-                double sentiment = combinedSentiment.get();
-                sentimentCache.put(ticker, sentiment);
-                
-                return new SentimentResult(ticker, sentiment, false);
-            } catch (Exception e) {
-                LOGGER.severe("Sentiment analysis failed for " + ticker + ": " + e.getMessage());
-                return new SentimentResult(ticker, 0.0, false);
-            }
-        }, analysisExecutor);
-    }
-    
-    private CompletableFuture<Double> analyzeNewsSentiment(String ticker) {
+
+    public CompletableFuture<Double> analyzeNewsSentiment(String ticker) {
         List<CompletableFuture<List<NewsArticle>>> articleFutures = new ArrayList<>();
         
+        // Traditional News Sources
         for (NewsSource source : newsSources.values()) {
             articleFutures.add(source.getArticles(ticker));
         }
+        
+        // Additional Financial Data
+        articleFutures.add(getAlphaVantageNews(ticker));
+        articleFutures.add(getYahooFinanceNews(ticker));
+        articleFutures.add(getMarketWatchNews(ticker));
         
         return CompletableFuture.allOf(articleFutures.toArray(new CompletableFuture[0]))
             .thenApply(v -> articleFutures.stream()
@@ -92,13 +86,21 @@ public class SentimentAnalyzer {
                 .collect(Collectors.toList()))
             .thenApply(this::calculateNewsSentiment);
     }
-    
-    private CompletableFuture<Double> analyzeSocialSentiment(String ticker) {
+
+    public CompletableFuture<Double> analyzeSocialMedia(String ticker) {
         List<CompletableFuture<List<SocialPost>>> postFutures = new ArrayList<>();
         
+        // Social Media Platforms
         for (SocialMediaSource source : socialSources.values()) {
-            postFutures.add(source.getPosts(ticker));
+            if (!(source instanceof RedditSource)) {
+                postFutures.add(source.getPosts(ticker));
+            }
         }
+        
+        // Additional Social Sources
+        postFutures.add(getGithubDiscussions(ticker));
+        postFutures.add(getStackExchangePosts(ticker));
+        postFutures.add(getDiscordMessages(ticker));
         
         return CompletableFuture.allOf(postFutures.toArray(new CompletableFuture[0]))
             .thenApply(v -> postFutures.stream()
@@ -106,7 +108,131 @@ public class SentimentAnalyzer {
                 .collect(Collectors.toList()))
             .thenApply(this::calculateSocialSentiment);
     }
-    
+
+    private CompletableFuture<List<NewsArticle>> getAlphaVantageNews(String ticker) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                String url = String.format("https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=%s&apikey=%s",
+                    ticker, ALPHA_VANTAGE_KEY);
+                Document doc = Jsoup.connect(url).ignoreContentType(true).get();
+                JsonObject json = parseJsonResponse(doc.text());
+                return parseAlphaVantageNews(json);
+            } catch (Exception e) {
+                LOGGER.warning("Failed to fetch Alpha Vantage news: " + e.getMessage());
+                return new ArrayList<>();
+            }
+        }, analysisExecutor);
+    }
+
+    private CompletableFuture<List<NewsArticle>> getYahooFinanceNews(String ticker) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                String url = String.format("https://finance.yahoo.com/quote/%s/news", ticker);
+                Document doc = Jsoup.connect(url).get();
+                return parseYahooFinanceNews(doc);
+            } catch (Exception e) {
+                LOGGER.warning("Failed to fetch Yahoo Finance news: " + e.getMessage());
+                return new ArrayList<>();
+            }
+        }, analysisExecutor);
+    }
+
+    private List<NewsArticle> parseYahooFinanceNews(Document doc) {
+        return doc.select("div.news-stream article").stream()
+            .map(article -> new NewsArticle(
+                article.select("h3").text(),
+                article.select("p").text(),
+                "Yahoo Finance",
+                0.8, // Source trust score
+                Instant.now()
+            ))
+            .collect(Collectors.toList());
+    }
+
+    private CompletableFuture<List<SocialPost>> getGithubDiscussions(String ticker) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                String url = String.format("https://api.github.com/search/discussions?q=%s+crypto", ticker);
+                Document doc = Jsoup.connect(url)
+                    .header("Accept", "application/vnd.github.v3+json")
+                    .ignoreContentType(true)
+                    .get();
+                return parseGithubDiscussions(doc);
+            } catch (Exception e) {
+                LOGGER.warning("Failed to fetch Github discussions: " + e.getMessage());
+                return new ArrayList<>();
+            }
+        }, analysisExecutor);
+    }
+
+    private List<SocialPost> parseGithubDiscussions(Document doc) {
+        JsonObject json = parseJsonResponse(doc.text());
+        // Implementation details for parsing Github API response
+        return new ArrayList<>(); // Placeholder
+    }
+
+    public double[] getSocialMetrics(String ticker) {
+        try {
+            Map<String, Double> metrics = new HashMap<>();
+            
+            // Twitter metrics
+            metrics.put("twitter_sentiment", socialSources.get("twitter").getAverageSentiment(ticker));
+            metrics.put("twitter_volume", getTwitterVolume(ticker));
+            
+            // Reddit metrics
+            metrics.put("reddit_sentiment", socialSources.get("reddit").getAverageSentiment(ticker));
+            metrics.put("reddit_mentions", getRedditMentions(ticker));
+            
+            // Github metrics
+            metrics.put("github_sentiment", getGithubSentiment(ticker));
+            metrics.put("github_activity", getGithubActivity(ticker));
+            
+            // Convert to array
+            double[] result = new double[metrics.size()];
+            int i = 0;
+            for (Double value : metrics.values()) {
+                result[i++] = value != null ? value : 0.0;
+            }
+            return result;
+        } catch (Exception e) {
+            LOGGER.severe("Failed to get social metrics: " + e.getMessage());
+            return new double[6]; // Return zero-filled array
+        }
+    }
+
+    private double getTwitterVolume(String ticker) {
+        // Implementation for getting tweet volume
+        return 0.0; // Placeholder
+    }
+
+    private double getRedditMentions(String ticker) {
+        // Implementation for getting Reddit mention count
+        return 0.0; // Placeholder
+    }
+
+    private double getGithubSentiment(String ticker) {
+        // Implementation for getting Github discussion sentiment
+        return 0.0; // Placeholder
+    }
+
+    private double getGithubActivity(String ticker) {
+        // Implementation for getting Github activity level
+        return 0.0; // Placeholder
+    }
+
+    private JsonObject parseJsonResponse(String response) {
+        // Implementation for parsing JSON response
+        return new JsonObject(); // Placeholder
+    }
+
+    private void initializeCache() {
+        // Initialize cache with a fixed size and expiry time
+        sentimentCache = CacheBuilder.newBuilder()
+            .maximumSize(10000)
+            .expireAfterWrite(CACHE_EXPIRY, TimeUnit.MILLISECONDS)
+            .build();
+    }
+
     private double calculateNewsSentiment(List<NewsArticle> articles) {
         if (articles.isEmpty()) return 0.0;
         
@@ -121,7 +247,7 @@ public class SentimentAnalyzer {
             .average()
             .orElse(0.0);
     }
-    
+
     private double calculateSocialSentiment(List<SocialPost> posts) {
         if (posts.isEmpty()) return 0.0;
         
@@ -136,7 +262,7 @@ public class SentimentAnalyzer {
             .average()
             .orElse(0.0);
     }
-    
+
     private double analyzeSentimentText(String text) {
         try {
             // Preprocess text
@@ -156,7 +282,7 @@ public class SentimentAnalyzer {
             return 0.0;
         }
     }
-    
+
     private String preprocessText(String text) {
         // Remove URLs
         text = text.replaceAll("https?://\\S+\\s?", "");
@@ -172,7 +298,7 @@ public class SentimentAnalyzer {
         
         return text;
     }
-    
+
     private double[] textToFeatures(String text) {
         // Use tokenizer to split text
         List<String> tokens = tokenizerFactory.create(text).getTokens();
@@ -195,30 +321,33 @@ public class SentimentAnalyzer {
         
         return features;
     }
-    
-    private void startCacheCleanup() {
-        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-        scheduler.scheduleAtFixedRate(() -> {
+
+    public CompletableFuture<SentimentResult> analyzeSentiment(String ticker) {
+        return CompletableFuture.supplyAsync(() -> {
             try {
-                Instant cutoff = Instant.now().minusMillis(CACHE_EXPIRY);
-                sentimentCache.clear(); // Simple cache invalidation
+                Double cachedSentiment = sentimentCache.getIfPresent(ticker);
+                if (cachedSentiment != null) {
+                    return new SentimentResult(ticker, cachedSentiment, true);
+                }
+                
+                CompletableFuture<Double> newsSentiment = analyzeNewsSentiment(ticker);
+                CompletableFuture<Double> socialSentiment = analyzeSocialMedia(ticker);
+                
+                CompletableFuture<Double> combinedSentiment = newsSentiment
+                    .thenCombine(socialSentiment, (news, social) -> 
+                        (news * 0.6 + social * 0.4));
+                
+                double sentiment = combinedSentiment.get();
+                sentimentCache.put(ticker, sentiment);
+                
+                return new SentimentResult(ticker, sentiment, false);
             } catch (Exception e) {
-                LOGGER.warning("Cache cleanup failed: " + e.getMessage());
+                LOGGER.severe("Sentiment analysis failed for " + ticker + ": " + e.getMessage());
+                return new SentimentResult(ticker, 0.0, false);
             }
-        }, CACHE_EXPIRY, CACHE_EXPIRY, TimeUnit.MILLISECONDS);
+        }, analysisExecutor);
     }
-    
-    public Map<String, Double> getSocialMetrics(String ticker) {
-        Map<String, Double> metrics = new HashMap<>();
-        metrics.put("twitter_sentiment", 
-            socialSources.get("twitter").getAverageSentiment(ticker));
-        metrics.put("reddit_sentiment", 
-            socialSources.get("reddit").getAverageSentiment(ticker));
-        metrics.put("telegram_sentiment", 
-            socialSources.get("telegram").getAverageSentiment(ticker));
-        return metrics;
-    }
-    
+
     public void shutdown() {
         analysisExecutor.shutdown();
         try {
