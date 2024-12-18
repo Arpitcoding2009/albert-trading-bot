@@ -1,19 +1,29 @@
 package com.albert.trading.bot.ai;
 
-import com.albert.trading.bot.PerformanceOptimizer.MarketData;
+import com.albert.trading.bot.model.MarketData;
 import com.albert.trading.bot.model.TradingSignal;
+import java.util.Arrays;
+import java.util.Random;
 
 public class TradingStrategy implements Cloneable {
     private static final int GENE_LENGTH = 100;
     private final double[] genes;
     private double fitness;
+    private static final Random random = new Random();
     
     public TradingStrategy() {
         this.genes = new double[GENE_LENGTH];
+        randomizeGenes();
         this.fitness = 0.0;
     }
     
-    public TradingSignal predict(model.MarketData data) {
+    private void randomizeGenes() {
+        for (int i = 0; i < GENE_LENGTH; i++) {
+            genes[i] = random.nextGaussian();
+        }
+    }
+    
+    public TradingSignal predict(MarketData data) {
         double buySignal = 0.0;
         double sellSignal = 0.0;
         
@@ -31,15 +41,41 @@ public class TradingStrategy implements Cloneable {
             sellSignal += volumes[i] * genes[i + 3*GENE_LENGTH/4];
         }
         
-        // Decision threshold
-        double threshold = 0.1;
-        if (buySignal > threshold && buySignal > sellSignal) {
+        // Add technical indicators
+        double[] technicals = data.getTechnicalIndicators();
+        if (technicals != null && technicals.length > 0) {
+            int offset = GENE_LENGTH/2;
+            for (int i = 0; i < Math.min(technicals.length, GENE_LENGTH/4); i++) {
+                buySignal += technicals[i] * genes[i + offset];
+                sellSignal += technicals[i] * genes[i + offset + GENE_LENGTH/4];
+            }
+        }
+        
+        // Decision threshold with adaptive sensitivity
+        double threshold = 0.1 * Math.sqrt(getFitness() + 1.0);
+        if (buySignal > threshold && buySignal > sellSignal * 1.1) {
             return TradingSignal.BUY;
-        } else if (sellSignal > threshold && sellSignal > buySignal) {
+        } else if (sellSignal > threshold && sellSignal > buySignal * 1.1) {
             return TradingSignal.SELL;
         }
         
         return TradingSignal.HOLD;
+    }
+    
+    public void mutate(double mutationRate) {
+        for (int i = 0; i < GENE_LENGTH; i++) {
+            if (random.nextDouble() < mutationRate) {
+                genes[i] += random.nextGaussian() * 0.1;
+            }
+        }
+    }
+    
+    public TradingStrategy crossover(TradingStrategy other) {
+        TradingStrategy child = new TradingStrategy();
+        for (int i = 0; i < GENE_LENGTH; i++) {
+            child.genes[i] = random.nextBoolean() ? this.genes[i] : other.genes[i];
+        }
+        return child;
     }
     
     public static int getGeneLength() {
@@ -47,7 +83,7 @@ public class TradingStrategy implements Cloneable {
     }
 
     public double[] getGenes() {
-        return genes;
+        return Arrays.copyOf(genes, genes.length);
     }
     
     public double getFitness() {
@@ -68,9 +104,5 @@ public class TradingStrategy implements Cloneable {
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException("Clone failed", e);
         }
-    }
-
-    public TradingSignal predict(MarketData data) {
-        throw new UnsupportedOperationException("Unimplemented method 'predict'");
     }
 }

@@ -1,0 +1,59 @@
+binance:
+  name: Binance
+  baseUrl: https://api.binance.com
+  version: v3
+  headers:
+    Content-Type: application/json
+    User-Agent: Albert-Trading-Bot/1.0.0
+  parameters:
+    recvWindow: 5000
+  auth:
+    type: HMAC-SHA256
+    apiKey: your-api-key-here
+    apiSecret: your-api-secret-here
+  rateLimit:
+    requestsPerSecond: 10
+    requestsPerMinute: 1200
+    requestsPerHour: 48000
+    endpointLimits:
+      /api/v3/order: 100
+      /api/v3/klines: 1000
+
+coinbase:
+  name: Coinbase Pro
+  baseUrl: https://api.pro.coinbase.com
+  version: v1
+  headers:
+    Content-Type: application/json
+    User-Agent: Albert-Trading-Bot/1.0.0
+  auth:
+    type: JWT
+    apiKey: your-api-key-here
+    apiSecret: your-api-secret-here
+    additionalParams:
+      passphrase: your-passphrase-here
+  rateLimit:
+    requestsPerSecond: 5
+    requestsPerMinute: 300
+    requestsPerHour: 18000
+    endpointLimits:
+      /orders: 50
+      /products: 100
+
+newsapi:
+  name: News API
+  baseUrl: https://newsapi.org
+  version: v2
+  headers:
+    Content-Type: application/json
+    User-Agent: Albert-Trading-Bot/1.0.0
+  auth:
+    type: API_KEY
+    apiKey: your-api-key-here
+  rateLimit:
+    requestsPerSecond: 1
+    requestsPerMinute: 60
+    requestsPerHour: 3600
+    endpointLimits:
+      /everything: 100
+      /top-headlines: 100

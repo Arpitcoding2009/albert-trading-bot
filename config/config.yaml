@@ -1,0 +1,41 @@
+bot:
+  name: Albert
+  version: 1.0.0
+  initialBalance: 10000.0
+  maxConcurrentTrades: 5
+  maxRiskPerTrade: 0.02
+  defaultTimeframe: 300
+
+logging:
+  level: INFO
+  file: logs/trading.log
+  maxSize: 100MB
+  maxHistory: 30
+  pattern: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+database:
+  type: sqlite
+  path: data/trading.db
+  backupInterval: 86400
+  maxConnections: 10
+
+performance:
+  trackingInterval: 300
+  metricsHistoryDays: 30
+  autoOptimizationEnabled: true
+  optimizationInterval: 86400
+
+security:
+  encryptionEnabled: true
+  keystorePath: security/keystore.jks
+  certificatePath: security/certificate.pem
+
+notifications:
+  enabled: true
+  types:
+    - email
+    - telegram
+  criticalAlerts:
+    - tradeExecution
+    - errorOccurred
+    - performanceThresholdBreached

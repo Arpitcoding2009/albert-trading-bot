@@ -1,0 +1,68 @@
+ML_STRATEGY:
+  name: Machine Learning Strategy
+  description: Advanced ML-based trading strategy using deep learning and sentiment analysis
+  timeframe: 300
+  parameters:
+    stopLoss: 0.02
+    takeProfit: 0.04
+    trailingStop: 0.015
+    minVolume: 1000000
+  indicators:
+    - RSI
+    - MACD
+    - BollingerBands
+  features:
+    useML: true
+    useSentiment: true
+    useEvolutionary: true
+  optimization:
+    enabled: true
+    interval: 86400
+    populationSize: 100
+    generations: 50
+
+TREND_FOLLOWING:
+  name: Trend Following Strategy
+  description: Classic trend following strategy with multiple timeframe analysis
+  timeframe: 600
+  parameters:
+    stopLoss: 0.025
+    takeProfit: 0.05
+    trailingStop: 0.02
+    minVolume: 500000
+  indicators:
+    - EMA
+    - ADX
+    - ATR
+  features:
+    useML: false
+    useSentiment: true
+    useEvolutionary: false
+  optimization:
+    enabled: true
+    interval: 172800
+    populationSize: 50
+    generations: 25
+
+MEAN_REVERSION:
+  name: Mean Reversion Strategy
+  description: Statistical arbitrage strategy based on price mean reversion
+  timeframe: 900
+  parameters:
+    stopLoss: 0.015
+    takeProfit: 0.03
+    trailingStop: 0.01
+    minVolume: 750000
+  indicators:
+    - RSI
+    - BollingerBands
+    - StochasticOscillator
+  features:
+    useML: true
+    useSentiment: false
+    useEvolutionary: true
+  optimization:
+    enabled: true
+    interval: 129600
+    populationSize: 75
+    generations: 35
